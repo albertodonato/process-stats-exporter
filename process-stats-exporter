@@ -1,0 +1,86 @@
+#!/usr/bin/env python
+
+from collections import namedtuple
+
+from prometheus_aioexporter.script import PrometheusExporterScript
+from prometheus_aioexporter.metric import MetricConfig
+
+from lxstats.process import (
+    Collection,
+    Collector)
+
+
+Stat = namedtuple('Stat', ['name', 'description', 'metric', 'type'])
+
+STATS = (
+    Stat(
+        'stat.utime', 'Time scheduled in user mode', 'process_time_user',
+        'counter'),
+    Stat(
+        'stat.stime', 'Time scheduled in kernel mode', 'process_time_system',
+        'counter'),
+    Stat(
+        'stat.rss', 'Memory resident segment size (RSS)',
+        'process_mem_rss', 'gauge'),
+    Stat(
+        'stat.majflt', 'Number of major faults that required a page load',
+        'process_maj_fault', 'counter'),
+    Stat(
+        'stat.minflt', 'Number of minor faults the not required a page load',
+        'process_min_fault', 'counter'),
+    Stat(
+        'sched.nr_involuntary_switches',
+        'Number of involuntary context switches',
+        'process_ctx_involuntary', 'counter'),
+    Stat(
+        'sched.nr_voluntary_switches', 'Number of voluntary context switches',
+        'process_ctx_voluntary', 'counter'),
+    Stat(
+        'status.VmHWM', 'Maximum memory resident segment size (RSS)',
+        'process_mem_rss_max', 'counter'))
+
+
+class ProcessStatsExporter(PrometheusExporterScript):
+    """Prometheus exporter script for process statistics."""
+
+    name = 'process-stats-exporter'
+
+    def configure_argument_parser(self, parser):
+        parser.add_argument(
+            '-i', '--interval', help='stats update interval', type=int,
+            default=10)
+        parser.add_argument(
+            'pids', nargs='+', help='process ID', metavar='pid', type=int)
+
+    def configure(self, args):
+        self.pids = args.pids
+        metrics_config = [
+            MetricConfig(
+                stat.metric, stat.description, stat.type, {'labels': ['cmd']})
+            for stat in STATS]
+        self.create_metrics(metrics_config)
+
+    async def on_application_startup(self, application):
+        application.set_metric_update_handler(self._update_metrics)
+
+    def _update_metrics(self, metrics):
+        collector = Collector(pids=self.pids)
+        collection = Collection(collector=collector)
+        for process in collection:
+            process.collect_stats()
+            for stat in STATS:
+                value = process.get(stat.name)
+                if value is None:
+                    self.logger.warning(
+                        'emtpy value for metric "{}" on PID {}'.format(
+                            stat.name, process.pid))
+                    continue
+                metric = metrics[stat.metric].labels(cmd=process.get('comm'))
+                if stat.type == 'counter':
+                    metric.inc(value)
+                elif stat.type == 'gauge':
+                    metric.set(value)
+
+
+if __name__ == '__main__':
+    ProcessStatsExporter()()
