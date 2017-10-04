@@ -21,18 +21,37 @@ class Stat(Stat):
     def update(self, process, metric):
         """Update a metric for a process."""
         value = process.get(self.name)
+        self._update_metric(metric, process, value)
+
+    def _update_metric(self, metric, process, value):
         if value is None:
             self.logger.warning(
                 'emtpy value for metric "{}" on PID {}'.format(
                     self.name, process.pid))
             return
-        self._update_metric(metric.labels(cmd=process.get('comm')), value)
 
-    def _update_metric(self, metric, value):
+        metric = metric.labels(cmd=process.get('comm'))
         if self.type == 'counter':
             metric.inc(value)
         elif self.type == 'gauge':
             metric.set(value)
+
+
+class TasksStat(Stat):
+    """A process stat for a metric, involving process tasks."""
+
+    def update(self, process, metric):
+        tasks = process.tasks()
+        for task in tasks:
+            task.collect_stats()
+        self._update_tasks_metric(metric, tasks)
+
+    def _update_tasks_metric(self, metric, tasks):
+        value = len(tasks)
+        if value == 0:
+            return
+        process = tasks[0].parent
+        self._update_metric(metric, process, value)
 
 
 STATS = (
@@ -60,7 +79,10 @@ STATS = (
         'process_ctx_voluntary', 'counter'),
     Stat(
         'status.VmHWM', 'Maximum memory resident segment size (RSS)',
-        'process_mem_rss_max', 'counter'))
+        'process_mem_rss_max', 'counter'),
+    TasksStat(
+        'tasks_count', 'Number of process tasks',
+        'process_tasks', 'gauge'))
 
 
 class ProcessStatsExporter(PrometheusExporterScript):
