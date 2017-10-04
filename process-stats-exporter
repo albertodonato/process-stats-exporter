@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 
 from collections import namedtuple
+from itertools import chain
 
 from prometheus_aioexporter.script import PrometheusExporterScript
 from prometheus_aioexporter.metric import MetricConfig
 
 from lxstats.process import (
     Collection,
-    Collector)
+    Collector,
+    CommandLineFilter)
 
 
 Stat = namedtuple('Stat', ['name', 'description', 'metric', 'type'])
@@ -47,26 +49,38 @@ class ProcessStatsExporter(PrometheusExporterScript):
 
     def configure_argument_parser(self, parser):
         parser.add_argument(
-            '-i', '--interval', help='stats update interval', type=int,
-            default=10)
+            '-i', '--interval', type=int, default=10,
+            help='stats update interval')
         parser.add_argument(
-            'pids', nargs='+', help='process ID', metavar='pid', type=int)
+            '-P', '--pids', nargs='+', type=int, metavar='pid',
+            help='process PID')
+        parser.add_argument(
+            '-R', '--name-regexps', nargs='+',
+            metavar='name-regexp', help='regexp to match process name')
 
     def configure(self, args):
         self.pids = args.pids
-        metrics_config = [
+        self.name_regexps = args.name_regexps
+        if self.pids:
+            self.logger.info(
+                'tracking stats for PIDs [{}]'.format(', '.join(self.pids)))
+        elif self.name_regexps:
+            self.logger.info(
+                'tracking stats for processes [{}]'.format(
+                    ', '.join(self.name_regexps)))
+        else:
+            self.logger.warning('no process to track')
+
+        self.create_metrics(
             MetricConfig(
                 stat.metric, stat.description, stat.type, {'labels': ['cmd']})
-            for stat in STATS]
-        self.create_metrics(metrics_config)
+            for stat in STATS)
 
     async def on_application_startup(self, application):
         application.set_metric_update_handler(self._update_metrics)
 
     def _update_metrics(self, metrics):
-        collector = Collector(pids=self.pids)
-        collection = Collection(collector=collector)
-        for process in collection:
+        for process in self._get_process_iterator():
             process.collect_stats()
             for stat in STATS:
                 value = process.get(stat.name)
@@ -80,6 +94,19 @@ class ProcessStatsExporter(PrometheusExporterScript):
                     metric.inc(value)
                 elif stat.type == 'gauge':
                     metric.set(value)
+
+    def _get_process_iterator(self):
+        if self.pids:
+            return Collection(collector=Collector(pids=self.pids))
+        elif self.name_regexps:
+            collections = []
+            for name_re in self.name_regexps:
+                collection = Collection()
+                collection.add_filter(CommandLineFilter(name_re))
+                collections.append(collection)
+            return chain(*collections)
+        else:
+            return iter(())
 
 
 if __name__ == '__main__':
