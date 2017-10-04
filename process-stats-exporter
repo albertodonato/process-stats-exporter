@@ -14,6 +14,27 @@ from lxstats.process import (
 
 Stat = namedtuple('Stat', ['name', 'description', 'metric', 'type'])
 
+
+class Stat(Stat):
+    """A process stat for a metric."""
+
+    def update(self, process, metric):
+        """Update a metric for a process."""
+        value = process.get(self.name)
+        if value is None:
+            self.logger.warning(
+                'emtpy value for metric "{}" on PID {}'.format(
+                    self.name, process.pid))
+            return
+        self._update_metric(metric.labels(cmd=process.get('comm')), value)
+
+    def _update_metric(self, metric, value):
+        if self.type == 'counter':
+            metric.inc(value)
+        elif self.type == 'gauge':
+            metric.set(value)
+
+
 STATS = (
     Stat(
         'stat.utime', 'Time scheduled in user mode', 'process_time_user',
@@ -83,17 +104,7 @@ class ProcessStatsExporter(PrometheusExporterScript):
         for process in self._get_process_iterator():
             process.collect_stats()
             for stat in STATS:
-                value = process.get(stat.name)
-                if value is None:
-                    self.logger.warning(
-                        'emtpy value for metric "{}" on PID {}'.format(
-                            stat.name, process.pid))
-                    continue
-                metric = metrics[stat.metric].labels(cmd=process.get('comm'))
-                if stat.type == 'counter':
-                    metric.inc(value)
-                elif stat.type == 'gauge':
-                    metric.set(value)
+                stat.update(process, metrics[stat.metric])
 
     def _get_process_iterator(self):
         if self.pids:
