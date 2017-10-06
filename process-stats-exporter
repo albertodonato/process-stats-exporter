@@ -12,77 +12,94 @@ from lxstats.process import (
     CommandLineFilter)
 
 
-Stat = namedtuple('Stat', ['name', 'description', 'metric', 'type'])
+ProcessStat = namedtuple(
+    'ProcessStat', ['metric', 'type', 'description', 'stat'])
+
+ProcessTasksStat = namedtuple(
+    'ProcessTaskStat', ['metric', 'type', 'description'])
 
 
-class Stat(Stat):
-    """A process stat for a metric."""
+class StatsCollector:
+    """Describe and collect metrics."""
 
-    def update(self, process, metric):
-        """Update a metric for a process."""
-        value = process.get(self.name)
-        self._update_metric(metric, process, value)
+    @classmethod
+    def metrics(cls):
+        """Return a list of MetricConfigs."""
+        raise NotImplementedError('Subclasses must implement metrics()')
 
-    def _update_metric(self, metric, process, value):
-        if value is None:
-            self.logger.warning(
-                'emtpy value for metric "{}" on PID {}'.format(
-                    self.name, process.pid))
-            return
-
-        metric = metric.labels(cmd=process.get('comm'))
-        if self.type == 'counter':
-            metric.inc(value)
-        elif self.type == 'gauge':
-            metric.set(value)
+    @classmethod
+    def collect(cls, process):
+        """Return a dict mapping metric names to values for the process."""
+        raise NotImplementedError('Subclasses must implement collect()')
 
 
-class TasksStat(Stat):
-    """A process stat for a metric, involving process tasks."""
+class ProcessStatsCollector(StatsCollector):
+    """Collect metrics for a process."""
 
-    def update(self, process, metric):
+    _STATS = (
+        ProcessStat(
+            'process_time_user', 'counter', 'Time scheduled in user mode',
+            'stat.utime'),
+        ProcessStat(
+            'process_time_system', 'counter',
+            'Time scheduled in kernel mode', 'stat.stime'),
+        ProcessStat(
+            'process_mem_rss', 'gauge', 'Memory resident segment size (RSS)',
+            'stat.rss'),
+        ProcessStat(
+            'process_maj_fault', 'counter',
+            'Number of major faults that required a page load', 'stat.majflt'),
+        ProcessStat(
+            'process_min_fault', 'counter',
+            'Number of minor faults the not required a page load',
+            'stat.minflt'),
+        ProcessStat(
+            'process_ctx_involuntary', 'counter',
+            'Number of involuntary context switches',
+            'sched.nr_involuntary_switches'),
+        ProcessStat(
+            'process_ctx_voluntary', 'counter',
+            'Number of voluntary context switches',
+            'sched.nr_voluntary_switches'),
+        ProcessStat(
+            'process_mem_rss_max', 'counter',
+            'Maximum memory resident segment size (RSS)', 'status.VmHWM'))
+
+    @classmethod
+    def metrics(cls):
+        return [
+            MetricConfig(
+                stat.metric, stat.description, stat.type, {'labels': ['cmd']})
+            for stat in cls._STATS]
+
+    @classmethod
+    def collect(cls, process):
+        process.collect_stats()
+        return {stat.metric: process.get(stat.stat) for stat in cls._STATS}
+
+
+class ProcessTasksStatsCollector(StatsCollector):
+    """Collect metrics for a process' tasks."""
+
+    _STATS = (
+        ProcessTasksStat(
+            'process_tasks_count', 'gauge', 'Number of process tasks'),
+    )
+
+    @classmethod
+    def metrics(cls):
+        return [
+            MetricConfig(
+                stat.metric, stat.description, stat.type, {'labels': ['cmd']})
+            for stat in cls._STATS]
+
+    @classmethod
+    def collect(cls, process):
         tasks = process.tasks()
         for task in tasks:
             task.collect_stats()
-        self._update_tasks_metric(metric, tasks)
-
-    def _update_tasks_metric(self, metric, tasks):
-        value = len(tasks)
-        if value == 0:
-            return
-        process = tasks[0].parent
-        self._update_metric(metric, process, value)
-
-
-STATS = (
-    Stat(
-        'stat.utime', 'Time scheduled in user mode', 'process_time_user',
-        'counter'),
-    Stat(
-        'stat.stime', 'Time scheduled in kernel mode', 'process_time_system',
-        'counter'),
-    Stat(
-        'stat.rss', 'Memory resident segment size (RSS)',
-        'process_mem_rss', 'gauge'),
-    Stat(
-        'stat.majflt', 'Number of major faults that required a page load',
-        'process_maj_fault', 'counter'),
-    Stat(
-        'stat.minflt', 'Number of minor faults the not required a page load',
-        'process_min_fault', 'counter'),
-    Stat(
-        'sched.nr_involuntary_switches',
-        'Number of involuntary context switches',
-        'process_ctx_involuntary', 'counter'),
-    Stat(
-        'sched.nr_voluntary_switches', 'Number of voluntary context switches',
-        'process_ctx_voluntary', 'counter'),
-    Stat(
-        'status.VmHWM', 'Maximum memory resident segment size (RSS)',
-        'process_mem_rss_max', 'counter'),
-    TasksStat(
-        'tasks_count', 'Number of process tasks',
-        'process_tasks', 'gauge'))
+        return {
+            'process_tasks_count': len(tasks)}
 
 
 class ProcessStatsExporter(PrometheusExporterScript):
@@ -102,44 +119,57 @@ class ProcessStatsExporter(PrometheusExporterScript):
             metavar='name-regexp', help='regexp to match process name')
 
     def configure(self, args):
-        self.pids = args.pids
-        self.name_regexps = args.name_regexps
-        if self.pids:
+        self._pids = args.pids
+        self._name_regexps = args.name_regexps
+        if self._pids:
             self.logger.info(
-                'tracking stats for PIDs [{}]'.format(', '.join(self.pids)))
-        elif self.name_regexps:
+                'tracking stats for PIDs [{}]'.format(', '.join(self._pids)))
+        elif self._name_regexps:
             self.logger.info(
                 'tracking stats for processes [{}]'.format(
-                    ', '.join(self.name_regexps)))
+                    ', '.join(self._name_regexps)))
         else:
             self.logger.warning('no process to track')
 
-        self.create_metrics(
-            MetricConfig(
-                stat.metric, stat.description, stat.type, {'labels': ['cmd']})
-            for stat in STATS)
+        metric_configs = ProcessStatsCollector.metrics()
+        metric_configs.extend(ProcessTasksStatsCollector.metrics())
+        self._metrics = self.create_metrics(metric_configs)
 
     async def on_application_startup(self, application):
         application.set_metric_update_handler(self._update_metrics)
 
     def _update_metrics(self, metrics):
         for process in self._get_process_iterator():
-            process.collect_stats()
-            for stat in STATS:
-                stat.update(process, metrics[stat.metric])
+            metric_values = ProcessStatsCollector.collect(process)
+            metric_values.update(ProcessTasksStatsCollector.collect(process))
+            for metric, value in metric_values.items():
+                self._update_metric(process, metric, value)
 
     def _get_process_iterator(self):
-        if self.pids:
-            return Collection(collector=Collector(pids=self.pids))
-        elif self.name_regexps:
+        if self._pids:
+            return Collection(collector=Collector(pids=self._pids))
+        elif self._name_regexps:
             collections = []
-            for name_re in self.name_regexps:
+            for name_re in self._name_regexps:
                 collection = Collection()
                 collection.add_filter(CommandLineFilter(name_re))
                 collections.append(collection)
             return chain(*collections)
         else:
             return iter(())
+
+    def _update_metric(self, process, metric_name, value):
+        if value is None:
+            self.logger.warning(
+                'emtpy value for metric "{}" on PID {}'.format(
+                    metric_name, process.pid))
+            return
+
+        metric = self._metrics[metric_name].labels(cmd=process.get('comm'))
+        if metric._type == 'counter':
+            metric.inc(value)
+        elif metric._type == 'gauge':
+            metric.set(value)
 
 
 if __name__ == '__main__':
