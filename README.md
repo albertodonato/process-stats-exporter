@@ -44,7 +44,6 @@ The following metrics are currently available:
 * `process_tasks_state_uninterruptible_sleep`: number of process tasks in
   uninterruptible sleep state
 
-
 Metrics are tagged with the command name, to allow filtering series, e.g.:
 
 ```bash
