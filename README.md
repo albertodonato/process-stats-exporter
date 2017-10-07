@@ -5,3 +5,31 @@
 
 `process-stats-exporter` is a [Prometheus](https://prometheus.io/) exporter
 which collect metrics for processes and tasks.
+
+# Running
+
+`process-stats-exporter` can be given a set of processes to monitor in one of two ways:
+
+* by giving a set of PIDs:
+
+```bash
+process-stats-exporter -P 123 456 789
+```
+
+* using a process name regexps:
+
+```bash
+process-stats-exporter -R foo bar
+```
+
+
+# Metrics
+
+Stats are accessible by default on `http://localhost:9090/metrics` (port can
+be changed with the `-p` option).
+
+Metrics are tagged with the command name, to allow filtering series, e.g.:
+
+```bash
+process_mem_rss{cmd="bash"} 1726.0
+```
