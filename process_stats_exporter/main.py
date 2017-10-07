@@ -1,4 +1,4 @@
-# Expose a Prometheus metrics endpoint with process stats.
+"""Expose a Prometheus metrics endpoint with process stats."""
 
 from prometheus_aioexporter.script import PrometheusExporterScript
 

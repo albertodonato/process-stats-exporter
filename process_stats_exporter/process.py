@@ -1,4 +1,4 @@
-# Helpers to collect processes.
+"""Helpers to collect processes."""
 
 from itertools import chain
 

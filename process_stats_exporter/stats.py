@@ -1,4 +1,4 @@
-# Collect metrics for processes and tasks
+"""Collect metrics for processes and tasks"""
 
 from collections import (
     namedtuple,
