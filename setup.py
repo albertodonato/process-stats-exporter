@@ -2,6 +2,8 @@ from setuptools import setup, find_packages
 
 from process_stats_exporter import __version__, __doc__ as description
 
+tests_require = ['toolrack']
+
 config = {
     'name': 'process-stats-exporter',
     'version': __version__,
@@ -21,6 +23,8 @@ config = {
     'install_requires': [
         'lxstats',
         'prometheus_aioexporter'],
+    'tests_require': tests_require,
+    'extras_require': {'testing': tests_require},
     'keywords': 'metric prometheus process exporter',
     'classifiers': [
         'Development Status :: 4 - Beta',
