@@ -6,7 +6,7 @@
 `process-stats-exporter` is a [Prometheus](https://prometheus.io/) exporter
 which collect metrics for processes and tasks.
 
-# Running
+## Running
 
 `process-stats-exporter` can be given a set of processes to monitor in one of two ways:
 
@@ -23,7 +23,7 @@ process-stats-exporter -R 'foo.*' bar
 ```
 
 
-# Metrics
+## Metrics
 
 Process stats are accessible by default on `http://localhost:9090/metrics`
 (port can be changed with the `-p` option).
@@ -44,7 +44,7 @@ The following metrics are currently available:
 * `process_tasks_state_uninterruptible_sleep`: number of process tasks in
   uninterruptible sleep state
 
-Metrics are tagged with the command name, to allow filtering series, e.g.:
+All metrics are tagged with the command name, to allow filtering series, e.g.:
 
 ```bash
 process_mem_rss{cmd="bash"} 1726.0
