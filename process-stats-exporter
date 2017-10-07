@@ -155,6 +155,7 @@ class ProcessStatsExporter(PrometheusExporterScript):
         application.set_metric_update_handler(self._update_metrics)
 
     def _update_metrics(self, metrics):
+        """Update metrics on requests."""
         for process in self._get_process_iterator():
             metric_values = ProcessStatsCollector.collect(process)
             metric_values.update(ProcessTasksStatsCollector.collect(process))
@@ -162,6 +163,7 @@ class ProcessStatsExporter(PrometheusExporterScript):
                 self._update_metric(process, metric, value)
 
     def _get_process_iterator(self):
+        """Return an iterator yielding Process objects."""
         if self._pids:
             return Collection(collector=Collector(pids=self._pids))
         elif self._name_regexps:
@@ -175,6 +177,7 @@ class ProcessStatsExporter(PrometheusExporterScript):
             return iter(())
 
     def _update_metric(self, process, metric_name, value):
+        """Update the value for a metrics."""
         if value is None:
             self.logger.warning(
                 'emtpy value for metric "{}" on PID {}'.format(
