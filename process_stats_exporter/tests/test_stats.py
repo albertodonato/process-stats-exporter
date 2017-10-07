@@ -32,11 +32,11 @@ class ProcessStatsCollectorTests(LxStatsTestCase):
             ['process_time_user',
              'process_time_system',
              'process_mem_rss',
+             'process_mem_rss_max',
              'process_maj_fault',
              'process_min_fault',
              'process_ctx_involuntary',
-             'process_ctx_voluntary',
-             'process_mem_rss_max'])
+             'process_ctx_voluntary'])
 
     def test_collect(self):
         """Stats for a process can be collected."""
@@ -54,14 +54,14 @@ class ProcessStatsCollectorTests(LxStatsTestCase):
                 '''))
         self.assertEqual(
             ProcessStatsCollector.collect(process),
-            {'process_time_system': 14,
-             'process_mem_rss_max': 102400,
+            {'process_time_user': 13,
+             'process_time_system': 14,
              'process_mem_rss': 23,
-             'process_ctx_voluntary': 2000,
-             'process_time_user': 13,
+             'process_mem_rss_max': 102400,
+             'process_maj_fault': 11,
              'process_min_fault': 9,
              'process_ctx_involuntary': 1000,
-             'process_maj_fault': 11})
+             'process_ctx_voluntary': 2000})
 
 
 class ProcessTasksStatsCollectorTests(LxStatsTestCase):

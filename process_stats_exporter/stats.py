@@ -42,11 +42,14 @@ class ProcessStatsCollector(StatsCollector):
             'process_mem_rss', 'gauge', 'Memory resident segment size (RSS)',
             'stat.rss'),
         ProcessStat(
+            'process_mem_rss_max', 'counter',
+            'Maximum memory resident segment size (RSS)', 'status.VmHWM'),
+        ProcessStat(
             'process_maj_fault', 'counter',
             'Number of major faults that required a page load', 'stat.majflt'),
         ProcessStat(
             'process_min_fault', 'counter',
-            'Number of minor faults the not required a page load',
+            'Number of minor faults that did not require a page load',
             'stat.minflt'),
         ProcessStat(
             'process_ctx_involuntary', 'counter',
@@ -55,10 +58,7 @@ class ProcessStatsCollector(StatsCollector):
         ProcessStat(
             'process_ctx_voluntary', 'counter',
             'Number of voluntary context switches',
-            'sched.nr_voluntary_switches'),
-        ProcessStat(
-            'process_mem_rss_max', 'counter',
-            'Maximum memory resident segment size (RSS)', 'status.VmHWM'))
+            'sched.nr_voluntary_switches'))
 
     @classmethod
     def metrics(cls):
