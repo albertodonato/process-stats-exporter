@@ -1,17 +1,11 @@
 # Expose a Prometheus metrics endpoint with process stats.
 
-from itertools import chain
-
 from prometheus_aioexporter.script import PrometheusExporterScript
-
-from lxstats.process import (
-    Collection,
-    Collector,
-    CommandLineFilter)
 
 from .stats import (
     ProcessStatsCollector,
     ProcessTasksStatsCollector)
+from .process import get_process_iterator
 
 
 class ProcessStatsExporter(PrometheusExporterScript):
@@ -54,25 +48,13 @@ class ProcessStatsExporter(PrometheusExporterScript):
 
     def _update_metrics(self, metrics):
         """Update metrics on requests."""
-        for process in self._get_process_iterator():
+        process_iter = get_process_iterator(
+            pids=self._pids, name_regexps=self._name_regexps)
+        for process in process_iter:
             metric_values = ProcessStatsCollector.collect(process)
             metric_values.update(ProcessTasksStatsCollector.collect(process))
             for metric, value in metric_values.items():
                 self._update_metric(process, metric, value)
-
-    def _get_process_iterator(self):
-        """Return an iterator yielding Process objects."""
-        if self._pids:
-            return Collection(collector=Collector(pids=self._pids))
-        elif self._name_regexps:
-            collections = []
-            for name_re in self._name_regexps:
-                collection = Collection()
-                collection.add_filter(CommandLineFilter(name_re))
-                collections.append(collection)
-            return chain(*collections)
-        else:
-            return iter(())
 
     def _update_metric(self, process, metric_name, value):
         """Update the value for a metrics."""

@@ -1,6 +1,10 @@
-from setuptools import setup, find_packages
+from setuptools import (
+    setup,
+    find_packages)
 
-from process_stats_exporter import __version__, __doc__ as description
+from process_stats_exporter import (
+    __version__,
+    __doc__ as description)
 
 tests_require = ['toolrack']
 
