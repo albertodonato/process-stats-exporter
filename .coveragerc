@@ -1,0 +1,5 @@
+[run]
+source =
+  process_stats_exporter
+omit =
+  process_stats_exporter/main.py

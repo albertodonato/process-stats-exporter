@@ -1,2 +1,3 @@
-lxstats
-prometheus_aioexporter
+# Dependencies are specified in setup.py
+-e .
+-e .[testing]

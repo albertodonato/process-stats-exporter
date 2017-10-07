@@ -191,5 +191,4 @@ class ProcessStatsExporter(PrometheusExporterScript):
             metric.set(value)
 
 
-if __name__ == '__main__':
-    ProcessStatsExporter()()
+script = ProcessStatsExporter()
