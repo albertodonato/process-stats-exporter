@@ -145,7 +145,7 @@ class ProcessStatsExporter(PrometheusExporterScript):
                 'tracking stats for processes [{}]'.format(
                     ', '.join(self._name_regexps)))
         else:
-            self.logger.warning('no process to track')
+            self.exit('Error: no PID or process names specified')
 
         metric_configs = ProcessStatsCollector.metrics()
         metric_configs.extend(ProcessTasksStatsCollector.metrics())
