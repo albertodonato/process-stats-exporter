@@ -16,10 +16,10 @@ which collect metrics for processes and tasks.
 process-stats-exporter -P 123 456 789
 ```
 
-* using a process name regexps:
+* using regexps for process names:
 
 ```bash
-process-stats-exporter -R foo bar
+process-stats-exporter -R 'foo.*' bar
 ```
 
 
