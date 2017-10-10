@@ -17,13 +17,14 @@ ProcessTasksStat = namedtuple(
 class StatsCollector:
     """Describe and collect metrics."""
 
-    @classmethod
-    def metrics(cls):
+    def __init__(self, labels=()):
+        self.labels = list(labels)
+
+    def metrics(self):
         """Return a list of MetricConfigs."""
         raise NotImplementedError('Subclasses must implement metrics()')
 
-    @classmethod
-    def collect(cls, process):
+    def collect(self, process):
         """Return a dict mapping metric names to values for the process."""
         raise NotImplementedError('Subclasses must implement collect()')
 
@@ -60,17 +61,20 @@ class ProcessStatsCollector(StatsCollector):
             'Number of voluntary context switches',
             'sched.nr_voluntary_switches'))
 
-    @classmethod
-    def metrics(cls):
+    def __init__(self, labels=()):
+        super().__init__(labels=labels)
+        self.labels.append('cmd')
+
+    def metrics(self):
         return [
             MetricConfig(
-                stat.metric, stat.description, stat.type, {'labels': ['cmd']})
-            for stat in cls._STATS]
+                stat.metric, stat.description, stat.type,
+                {'labels': self.labels})
+            for stat in self._STATS]
 
-    @classmethod
-    def collect(cls, process):
+    def collect(self, process):
         process.collect_stats()
-        return {stat.metric: process.get(stat.stat) for stat in cls._STATS}
+        return {stat.metric: process.get(stat.stat) for stat in self._STATS}
 
 
 class ProcessTasksStatsCollector(StatsCollector):
@@ -90,15 +94,18 @@ class ProcessTasksStatsCollector(StatsCollector):
             'Number of process tasks in uninterruptible sleep state'),
     )
 
-    @classmethod
-    def metrics(cls):
+    def __init__(self, labels=()):
+        super().__init__(labels=labels)
+        self.labels.append('cmd')
+
+    def metrics(self):
         return [
             MetricConfig(
-                stat.metric, stat.description, stat.type, {'labels': ['cmd']})
-            for stat in cls._STATS]
+                stat.metric, stat.description, stat.type,
+                {'labels': self.labels})
+            for stat in self._STATS]
 
-    @classmethod
-    def collect(cls, process):
+    def collect(self, process):
         tasks = process.tasks()
         state_counts = defaultdict(int)
         for task in tasks:

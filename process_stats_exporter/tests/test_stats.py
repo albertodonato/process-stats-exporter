@@ -13,20 +13,39 @@ from ..stats import (
 
 class StatsCollectorTests(TestCase):
 
+    def test_labels_empty(self):
+        """By default, no label is applied."""
+        collector = StatsCollector()
+        self.assertEqual(collector.labels, [])
+
+    def test_labels(self):
+        """Extra labels are saved."""
+        collector = StatsCollector(['l1', 'l2'])
+        self.assertEqual(collector.labels, ['l1', 'l2'])
+
     def test_metrics(self):
         """The metrics() method must be implemented by subclasses."""
-        self.assertRaises(NotImplementedError, StatsCollector.metrics)
+        self.assertRaises(NotImplementedError, StatsCollector().metrics)
 
     def test_collect(self):
         """The collect() method must be implemented by subclasses."""
-        self.assertRaises(NotImplementedError, StatsCollector.collect, None)
+        self.assertRaises(NotImplementedError, StatsCollector().collect, None)
 
 
 class ProcessStatsCollectorTests(LxStatsTestCase):
 
+    def setUp(self):
+        super().setUp()
+        self.collector = ProcessStatsCollector()
+
+    def test_labels(self):
+        """Labels are saved, with the addition of the 'cmd' one."""
+        collector = ProcessStatsCollector(['l1', 'l2'])
+        self.assertEqual(collector.labels, ['l1', 'l2', 'cmd'])
+
     def test_metrics(self):
         """The list of process metrics is returned."""
-        metrics = ProcessStatsCollector.metrics()
+        metrics = self.collector.metrics()
         self.assertEqual(
             [metric.name for metric in metrics],
             ['process_time_user',
@@ -53,7 +72,7 @@ class ProcessStatsCollectorTests(LxStatsTestCase):
                 nr_voluntary_switches : 2000
                 '''))
         self.assertEqual(
-            ProcessStatsCollector.collect(process),
+            self.collector.collect(process),
             {'process_time_user': 13,
              'process_time_system': 14,
              'process_mem_rss': 23,
@@ -66,9 +85,18 @@ class ProcessStatsCollectorTests(LxStatsTestCase):
 
 class ProcessTasksStatsCollectorTests(LxStatsTestCase):
 
+    def setUp(self):
+        super().setUp()
+        self.collector = ProcessTasksStatsCollector()
+
+    def test_labels(self):
+        """Labels are saved, with the addition of the 'cmd' one."""
+        collector = ProcessTasksStatsCollector(['l1', 'l2'])
+        self.assertEqual(collector.labels, ['l1', 'l2', 'cmd'])
+
     def test_metrics(self):
         """The list of process metrics is returned."""
-        metrics = ProcessTasksStatsCollector.metrics()
+        metrics = self.collector.metrics()
         self.assertEqual(
             [metric.name for metric in metrics],
             ['process_tasks_count',
@@ -94,7 +122,7 @@ class ProcessTasksStatsCollectorTests(LxStatsTestCase):
             path='{}/task/789/stat'.format(pid),
             content='1 2 R')
         self.assertEqual(
-            ProcessTasksStatsCollector.collect(process),
+            self.collector.collect(process),
             {'process_tasks_count': 3,
              'process_tasks_state_running': 2,
              'process_tasks_state_sleeping': 0,
