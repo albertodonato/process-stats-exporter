@@ -7,9 +7,13 @@ from lxstats.process import (
     Collector,
     CommandLineFilter)
 
+from .label import (
+    PidLabeler,
+    CmdlineLabeler)
+
 
 def get_process_iterator(proc='/proc', pids=None, cmdline_regexps=None):
-    """Return an iterator yielding Process objects.
+    """Return an iterator yielding tuples with (Labeler, Process).
 
     Parameters:
       proc: the path to the ``/proc`` directory.
@@ -20,14 +24,17 @@ def get_process_iterator(proc='/proc', pids=None, cmdline_regexps=None):
 
     """
     if pids:
-        return Collection(collector=Collector(proc=proc, pids=pids))
+        labeler = PidLabeler()
+        collection = Collection(collector=Collector(proc=proc, pids=pids))
+        return ((labeler, process) for process in collection)
     elif cmdline_regexps:
         collectors = []
         for cmdline_re in cmdline_regexps:
             collection = Collection(collector=Collector(proc=proc))
             collection.add_filter(
                 CommandLineFilter(cmdline_re, include_args=True))
-            collectors.append(collection)
+            labeler = CmdlineLabeler(cmdline_re)
+            collectors.append((labeler, process) for process in collection)
         return chain(*collectors)
     else:
         return iter(())

@@ -2,7 +2,7 @@
 
 from prometheus_aioexporter.script import PrometheusExporterScript
 
-from .labels import LabelAction
+from .label import LabelAction
 from .metrics import ProcessMetricsHandler
 
 

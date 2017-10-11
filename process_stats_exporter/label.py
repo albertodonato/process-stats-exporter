@@ -27,3 +27,36 @@ class LabelAction(Action):
             labels[label] = value
 
         setattr(namespace, self.dest, labels)
+
+
+class PidLabeler:
+    """Return labels with process PID."""
+
+    def __call__(self, process):
+        """Return label values for the process."""
+        return {'pid': str(process.pid)}
+
+    def labels(self):
+        """Return label names."""
+        return ['pid']
+
+
+class CmdlineLabeler:
+    """Return labels based on process command line regexp.
+
+    If groups are specified in the regexp, labels are added with groups names
+    and values.
+    Otherwise, a "cmd" label is added with the process name.
+
+    """
+
+    def __init__(self, regexp):
+        self._regexp = re.compile(regexp)
+
+    def __call__(self, process):
+        """Return label values for the process."""
+        return {'cmd': process.get('comm')}
+
+    def labels(self):
+        """Return label names."""
+        return ['cmd']
