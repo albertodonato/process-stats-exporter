@@ -41,8 +41,8 @@ class LabelActionTests(TestCase):
 class PidLabelerTests(TestCase):
 
     def test_labels(self):
-        """PidLabeler returns the "pid label."""
-        self.assertEqual(PidLabeler().labels(), ['pid'])
+        """PidLabeler returns the "pid" label."""
+        self.assertEqual(PidLabeler().labels(), {'pid'})
 
     def test_call(self):
         """The labeler returns a label with the process PID."""
@@ -53,8 +53,18 @@ class PidLabelerTests(TestCase):
 class CmdlineLabelerTests(LxStatsTestCase):
 
     def test_labels(self):
-        """CmdlineLabelerTests returns the "cmd" label."""
-        self.assertEqual(CmdlineLabeler('exec').labels(), ['cmd'])
+        """The "cmd" label is returned if not match group is given."""
+        self.assertEqual(CmdlineLabeler('exec').labels(), {'cmd'})
+
+    def test_labels_with_groups(self):
+        """Match labels are returned if match groups are given."""
+        labeler = CmdlineLabeler('([0-9]+)exec([a-z]+)')
+        self.assertEqual(labeler.labels(), {'match_1', 'match_2'})
+
+    def test_labels_with_named_groups(self):
+        """Named match labels are returned if match groups are given."""
+        labeler = CmdlineLabeler('(?P<foo>[0-9]+)exec(?P<bar>[a-z]+)')
+        self.assertEqual(labeler.labels(), {'foo', 'bar'})
 
     def test_call(self):
         """The labeler returns a label with the process "cmd"."""
@@ -62,3 +72,19 @@ class CmdlineLabelerTests(LxStatsTestCase):
         process = Process(10, os.path.join(self.tempdir.path, '10'))
         process.collect_stats()
         self.assertEqual(CmdlineLabeler('exec')(process), {'cmd': 'exec'})
+
+    def test_call_with_groups(self):
+        """The labeler returns labels with regexp matches."""
+        self.make_process_file(10, 'cmdline', content='/path/to/exec')
+        process = Process(10, os.path.join(self.tempdir.path, '10'))
+        process.collect_stats()
+        labeler = CmdlineLabeler('(.*)/exec')
+        self.assertEqual(labeler(process), {'match_1': '/path/to'})
+
+    def test_call_with_named_groups(self):
+        """The labeler returns labels with named regexp matches."""
+        self.make_process_file(10, 'cmdline', content='/path/to/exec')
+        process = Process(10, os.path.join(self.tempdir.path, '10'))
+        process.collect_stats()
+        labeler = CmdlineLabeler('(?P<prefix>.*)/exec')
+        self.assertEqual(labeler(process), {'prefix': '/path/to'})
