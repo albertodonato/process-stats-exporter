@@ -44,8 +44,17 @@ The following metrics are currently available:
 * `process_tasks_state_uninterruptible_sleep`: number of process tasks in
   uninterruptible sleep state
 
-All metrics are tagged with the command name, to allow filtering series, e.g.:
 
-```bash
+### Labels
+
+All metrics are labeled with the command name, to allow filtering series, e.g.:
+
+```
 process_mem_rss{cmd="bash"} 1726.0
+```
+
+Additional static labels can be passed with the `-l` flag to tag all metrics (e.g. `-l foo=bar`):
+
+```
+process_mem_rss{cmd="bash",foo="bar"} 1726.0
 ```
