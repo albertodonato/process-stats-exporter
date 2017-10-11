@@ -2,8 +2,8 @@
 
 from prometheus_aioexporter.script import PrometheusExporterScript
 
-from .label import LabelAction
 from .metrics import ProcessMetricsHandler
+from .cmdline import LabelAction
 
 
 class ProcessStatsExporter(PrometheusExporterScript):
