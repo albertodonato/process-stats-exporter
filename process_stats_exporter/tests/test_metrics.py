@@ -1,4 +1,5 @@
 import os
+import re
 import logging
 from operator import itemgetter
 
@@ -51,9 +52,9 @@ class ProcessMetricsHandlerTests(TestCase):
     def test_update_metrics(self):
         """Metrics are updated with values from procesess."""
         self.labelers_processes.extend(
-            [(CmdlineLabeler('exec.*'),
+            [(CmdlineLabeler(re.compile('exec.*')),
               Process(10, os.path.join(self.tempdir.path, '10'))),
-             (CmdlineLabeler('exec.*'),
+             (CmdlineLabeler(re.compile('exec.*')),
               Process(20, os.path.join(self.tempdir.path, '20')))])
         self.make_process_file(10, 'comm', content='exec1')
         self.make_process_file(
@@ -64,7 +65,7 @@ class ProcessMetricsHandlerTests(TestCase):
             20, 'stat', content=' '.join(str(i) for i in range(45, 90)))
         self.make_process_dir(20, 'task')
         handler = ProcessMetricsHandler(
-            logging.getLogger('test'), cmdline_regexps=['exec.*'],
+            logging.getLogger('test'), cmdline_regexps=[re.compile('exec.*')],
             get_process_iterator=lambda **kwargs: self.labelers_processes)
         metrics = create_metrics(
             handler.get_metric_configs(), self.registry)

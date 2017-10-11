@@ -1,3 +1,5 @@
+import re
+
 from lxstats.testing import TestCase
 
 from ..process import get_process_iterator
@@ -27,7 +29,8 @@ class GetProcessIteratorTests(TestCase):
         self.make_process_file(30, 'cmdline', content='baz\x00bza\x00')
         self.make_process_file(40, 'cmdline', content='something\x00else\x00')
         iterator = get_process_iterator(
-            proc=self.tempdir.path, cmdline_regexps=['foo', 'baz'])
+            proc=self.tempdir.path,
+            cmdline_regexps=[re.compile('foo'), re.compile('baz')])
         labelers, processes = zip(*iterator)
         for labeler in labelers:
             self.assertIsInstance(labeler, CmdlineLabeler)
@@ -38,7 +41,7 @@ class GetProcessIteratorTests(TestCase):
         self.make_process_file(10, 'cmdline', content='foo\x00bar\x00')
         self.make_process_file(20, 'cmdline', content='another\x00command\x00')
         iterator = get_process_iterator(
-            proc=self.tempdir.path, cmdline_regexps=['bar'])
+            proc=self.tempdir.path, cmdline_regexps=[re.compile('bar')])
         _, processes = zip(*iterator)
         self.assertCountEqual([process.pid for process in processes], [10])
 

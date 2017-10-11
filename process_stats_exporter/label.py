@@ -1,6 +1,4 @@
-"""Metric labels."""
-
-import re
+"""Labelers to return metric labels for processes."""
 
 
 class PidLabeler:
@@ -27,7 +25,7 @@ class CmdlineLabeler:
     _match_prefix = 'match'
 
     def __init__(self, regexp):
-        self._regexp = re.compile(regexp)
+        self._regexp = regexp
 
     def __call__(self, process):
         """Return label values for the process."""

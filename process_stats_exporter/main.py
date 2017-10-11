@@ -3,7 +3,9 @@
 from prometheus_aioexporter.script import PrometheusExporterScript
 
 from .metrics import ProcessMetricsHandler
-from .cmdline import LabelAction
+from .cmdline import (
+    CmdlineRegexpAction,
+    LabelAction)
 
 
 class ProcessStatsExporter(PrometheusExporterScript):
@@ -16,7 +18,7 @@ class ProcessStatsExporter(PrometheusExporterScript):
             '-P', '--pids', nargs='+', type=int, metavar='pid',
             help='process PID')
         parser.add_argument(
-            '-R', '--cmdline-regexps', nargs='+',
+            '-R', '--cmdline-regexps', nargs='+', action=CmdlineRegexpAction,
             metavar='regexp', help='regexp to match process command line')
         parser.add_argument(
             '-l', '--labels', nargs='+', action=LabelAction, metavar='label',
@@ -31,7 +33,7 @@ class ProcessStatsExporter(PrometheusExporterScript):
         elif args.cmdline_regexps:
             self.logger.info(
                 'tracking stats for processes matching regexps [{}]'.format(
-                    ', '.join(args.cmdline_regexps)))
+                    ', '.join(rexp.pattern for rexp in args.cmdline_regexps)))
         else:
             self.exit('Error: no PID or process names specified')
 
