@@ -11,11 +11,11 @@ from .process import get_process_iterator
 class ProcessMetricsHandler:
     """Handle metrics for processes."""
 
-    def __init__(self, logger, pids=None, name_regexps=None, labels=None,
+    def __init__(self, logger, pids=None, cmdline_regexps=None, labels=None,
                  get_process_iterator=get_process_iterator):
         self.logger = logger
         self._pids = pids
-        self._name_regexps = name_regexps
+        self._cmdline_regexps = cmdline_regexps
         self._labels = labels or {}
         self._get_process_iterator = get_process_iterator
 
@@ -32,7 +32,7 @@ class ProcessMetricsHandler:
     def update_metrics(self, metrics):
         """Update the specified metrics for processes."""
         process_iter = self._get_process_iterator(
-            pids=self._pids, name_regexps=self._name_regexps)
+            pids=self._pids, cmdline_regexps=self._cmdline_regexps)
         for process in process_iter:
             metric_values = {}
             for collector in self._collectors:

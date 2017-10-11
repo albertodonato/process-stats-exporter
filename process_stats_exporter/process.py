@@ -8,23 +8,25 @@ from lxstats.process import (
     CommandLineFilter)
 
 
-def get_process_iterator(proc='/proc', pids=None, name_regexps=None):
+def get_process_iterator(proc='/proc', pids=None, cmdline_regexps=None):
     """Return an iterator yielding Process objects.
 
     Parameters:
       proc: the path to the ``/proc`` directory.
       pids: a list of PIDs of process to return. If this is specified,
             other filters are ignored.
-      name_regexps: a list of strings with regexps to filter process names.
+      cmdline_regexps: a list of strings with regexps to filter process
+                       command line.
 
     """
     if pids:
         return Collection(collector=Collector(proc=proc, pids=pids))
-    elif name_regexps:
+    elif cmdline_regexps:
         collectors = []
-        for name_re in name_regexps:
+        for cmdline_re in cmdline_regexps:
             collection = Collection(collector=Collector(proc=proc))
-            collection.add_filter(CommandLineFilter(name_re))
+            collection.add_filter(
+                CommandLineFilter(cmdline_re, include_args=True))
             collectors.append(collection)
         return chain(*collectors)
     else:
