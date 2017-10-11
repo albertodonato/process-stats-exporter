@@ -84,7 +84,7 @@ class ProcessMetricsHandlerTests(TestCase):
         self.make_process_dir(10, 'task')
         self.make_process_file(20, 'comm', content='exec2')
         self.make_process_file(
-            20, 'stat', content=' '.join(str(i) for i in range(45)))
+            20, 'stat', content=' '.join(str(i) for i in range(45, 90)))
         self.make_process_dir(20, 'task')
         metrics = create_metrics(handler.get_metric_configs(), self.registry)
         handler.update_metrics(metrics)
