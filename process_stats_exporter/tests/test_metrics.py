@@ -1,5 +1,6 @@
 import os
 import logging
+from operator import itemgetter
 
 from fixtures import LoggerFixture
 
@@ -54,7 +55,8 @@ class ProcessMetricsHandlerTests(TestCase):
         self.handler.update_metrics(metrics)
         # check value of a sample metric
         metric = metrics['process_min_fault']
-        [(_, labels1, value1), (_, labels2, value2)] = metric._samples()
+        [(_, labels1, value1), (_, labels2, value2)] = sorted(
+            metric._samples(), key=itemgetter(2))
         self.assertEqual(labels1, {'foo': 'bar', 'cmd': 'exec1'})
         self.assertEqual(value1, 9.0)
         self.assertEqual(labels2, {'foo': 'bar', 'cmd': 'exec2'})
