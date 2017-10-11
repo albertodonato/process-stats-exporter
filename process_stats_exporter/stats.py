@@ -61,10 +61,6 @@ class ProcessStatsCollector(StatsCollector):
             'Number of voluntary context switches',
             'sched.nr_voluntary_switches'))
 
-    def __init__(self, labels=()):
-        super().__init__(labels=labels)
-        self.labels.append('cmd')
-
     def metrics(self):
         return [
             MetricConfig(
@@ -93,10 +89,6 @@ class ProcessTasksStatsCollector(StatsCollector):
             'process_tasks_state_uninterruptible_sleep', 'gauge',
             'Number of process tasks in uninterruptible sleep state'),
     )
-
-    def __init__(self, labels=()):
-        super().__init__(labels=labels)
-        self.labels.append('cmd')
 
     def metrics(self):
         return [

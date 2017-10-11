@@ -53,6 +53,13 @@ All metrics are labeled with the command name, to allow filtering series, e.g.:
 process_mem_rss{cmd="bash"} 1726.0
 ```
 
+If PIDs are passed to the command line, metrics will have an additional `"pid"`
+label, with the PID of each specified process:
+
+```
+process_mem_rss{cmd="bash",pid="1345"} 1726.0
+```
+
 Additional static labels can be passed with the `-l` flag to tag all metrics (e.g. `-l foo=bar`):
 
 ```

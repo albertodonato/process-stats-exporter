@@ -19,7 +19,7 @@ class ProcessMetricsHandler:
         self._labels = labels or {}
         self._get_process_iterator = get_process_iterator
 
-        label_names = list(self._labels)
+        label_names = self._get_label_names()
         self._collectors = [
             ProcessStatsCollector(labels=label_names),
             ProcessTasksStatsCollector(labels=label_names)]
@@ -48,10 +48,24 @@ class ProcessMetricsHandler:
                     metric_name, process.pid))
             return
 
-        labels = self._labels.copy()
-        labels['cmd'] = process.get('comm')
-        metric = metric.labels(**labels)
+        metric = metric.labels(**self._get_labels(process))
         if metric._type == 'counter':
             metric.inc(value)
         elif metric._type == 'gauge':
             metric.set(value)
+
+    def _get_label_names(self):
+        """Return a list of label names."""
+        labels = list(self._labels)
+        labels.append('cmd')
+        if self._pids:
+            labels.append('pid')
+        return labels
+
+    def _get_labels(self, process):
+        """Return labels for a process."""
+        labels = self._labels.copy()
+        labels['cmd'] = process.get('comm')
+        if self._pids:
+            labels['pid'] = str(process.pid)
+        return labels

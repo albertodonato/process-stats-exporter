@@ -37,6 +37,14 @@ class ProcessMetricsHandlerTests(TestCase):
              'process_tasks_state_uninterruptible_sleep',
              'process_time_system', 'process_time_user'])
 
+    def test_get_metric_configs_with_pids(self):
+        """If PIDs are specified, metrics include a "pid" label."""
+        handler = ProcessMetricsHandler(
+            logging.getLogger('test'), pids=['10', '20'],
+            get_process_iterator=lambda **kwargs: self.processes)
+        for metric in handler.get_metric_configs():
+            self.assertEqual(metric.config['labels'], ['cmd', 'pid'])
+
     def test_update_metrics(self):
         """Metrics are updated with values from procesess."""
         self.processes = [
@@ -61,6 +69,31 @@ class ProcessMetricsHandlerTests(TestCase):
         self.assertEqual(value1, 9.0)
         self.assertEqual(labels2, {'foo': 'bar', 'cmd': 'exec2'})
         self.assertEqual(value2, 54.0)
+
+    def test_update_metrics_with_pids(self):
+        """Metrics include the "pid" label if PIDs are specified."""
+        handler = ProcessMetricsHandler(
+            logging.getLogger('test'), pids=['10', '20'],
+            get_process_iterator=lambda **kwargs: self.processes)
+        self.processes = [
+            Process(10, os.path.join(self.tempdir.path, '10')),
+            Process(20, os.path.join(self.tempdir.path, '20'))]
+        self.make_process_file(10, 'comm', content='exec1')
+        self.make_process_file(
+            10, 'stat', content=' '.join(str(i) for i in range(45)))
+        self.make_process_dir(10, 'task')
+        self.make_process_file(20, 'comm', content='exec2')
+        self.make_process_file(
+            20, 'stat', content=' '.join(str(i) for i in range(45)))
+        self.make_process_dir(20, 'task')
+        metrics = create_metrics(handler.get_metric_configs(), self.registry)
+        handler.update_metrics(metrics)
+        # check value of a sample metric
+        metric = metrics['process_min_fault']
+        [(_, labels1, _), (_, labels2, _)] = sorted(
+            metric._samples(), key=itemgetter(2))
+        self.assertEqual(labels1['pid'], '10')
+        self.assertEqual(labels2['pid'], '20')
 
     def test_log_empty_values(self):
         """A message is logged for empty metric values."""

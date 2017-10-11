@@ -38,11 +38,6 @@ class ProcessStatsCollectorTests(LxStatsTestCase):
         super().setUp()
         self.collector = ProcessStatsCollector()
 
-    def test_labels(self):
-        """Labels are saved, with the addition of the 'cmd' one."""
-        collector = ProcessStatsCollector(['l1', 'l2'])
-        self.assertEqual(collector.labels, ['l1', 'l2', 'cmd'])
-
     def test_metrics(self):
         """The list of process metrics is returned."""
         metrics = self.collector.metrics()
@@ -88,11 +83,6 @@ class ProcessTasksStatsCollectorTests(LxStatsTestCase):
     def setUp(self):
         super().setUp()
         self.collector = ProcessTasksStatsCollector()
-
-    def test_labels(self):
-        """Labels are saved, with the addition of the 'cmd' one."""
-        collector = ProcessTasksStatsCollector(['l1', 'l2'])
-        self.assertEqual(collector.labels, ['l1', 'l2', 'cmd'])
 
     def test_metrics(self):
         """The list of process metrics is returned."""
