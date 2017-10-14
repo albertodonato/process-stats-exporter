@@ -34,30 +34,30 @@ class ProcessStatsCollector(StatsCollector):
 
     _STATS = (
         ProcessStat(
-            'process_time_user', 'counter', 'Time scheduled in user mode',
+            'proc_time_user', 'counter', 'Time scheduled in user mode',
             'stat.utime'),
         ProcessStat(
-            'process_time_system', 'counter',
+            'proc_time_system', 'counter',
             'Time scheduled in kernel mode', 'stat.stime'),
         ProcessStat(
-            'process_mem_rss', 'gauge', 'Memory resident segment size (RSS)',
+            'proc_mem_rss', 'gauge', 'Memory resident segment size (RSS)',
             'stat.rss'),
         ProcessStat(
-            'process_mem_rss_max', 'counter',
+            'proc_mem_rss_max', 'counter',
             'Maximum memory resident segment size (RSS)', 'status.VmHWM'),
         ProcessStat(
-            'process_maj_fault', 'counter',
+            'proc_maj_fault', 'counter',
             'Number of major faults that required a page load', 'stat.majflt'),
         ProcessStat(
-            'process_min_fault', 'counter',
+            'proc_min_fault', 'counter',
             'Number of minor faults that did not require a page load',
             'stat.minflt'),
         ProcessStat(
-            'process_ctx_involuntary', 'counter',
+            'proc_ctx_involuntary', 'counter',
             'Number of involuntary context switches',
             'sched.nr_involuntary_switches'),
         ProcessStat(
-            'process_ctx_voluntary', 'counter',
+            'proc_ctx_voluntary', 'counter',
             'Number of voluntary context switches',
             'sched.nr_voluntary_switches'))
 
@@ -78,15 +78,15 @@ class ProcessTasksStatsCollector(StatsCollector):
 
     _STATS = (
         ProcessTasksStat(
-            'process_tasks_count', 'gauge', 'Number of process tasks'),
+            'proc_tasks_count', 'gauge', 'Number of process tasks'),
         ProcessTasksStat(
-            'process_tasks_state_running', 'gauge',
+            'proc_tasks_state_running', 'gauge',
             'Number of process tasks in running state'),
         ProcessTasksStat(
-            'process_tasks_state_sleeping', 'gauge',
+            'proc_tasks_state_sleeping', 'gauge',
             'Number of process tasks in sleeping state'),
         ProcessTasksStat(
-            'process_tasks_state_uninterruptible_sleep', 'gauge',
+            'proc_tasks_state_uninterruptible_sleep', 'gauge',
             'Number of process tasks in uninterruptible sleep state'),
     )
 
@@ -104,7 +104,7 @@ class ProcessTasksStatsCollector(StatsCollector):
             task.collect_stats()
             state_counts[task.get('stat.state')] += 1
         return {
-            'process_tasks_count': len(tasks),
-            'process_tasks_state_running': state_counts['R'],
-            'process_tasks_state_sleeping': state_counts['S'],
-            'process_tasks_state_uninterruptible_sleep': state_counts['D']}
+            'proc_tasks_count': len(tasks),
+            'proc_tasks_state_running': state_counts['R'],
+            'proc_tasks_state_sleeping': state_counts['S'],
+            'proc_tasks_state_uninterruptible_sleep': state_counts['D']}

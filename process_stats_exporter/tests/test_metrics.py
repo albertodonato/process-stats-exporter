@@ -34,12 +34,12 @@ class ProcessMetricsHandlerTests(TestCase):
         metric_configs = self.handler.get_metric_configs()
         self.assertCountEqual(
             [config.name for config in metric_configs],
-            ['process_ctx_involuntary', 'process_ctx_voluntary',
-             'process_maj_fault', 'process_mem_rss', 'process_mem_rss_max',
-             'process_min_fault', 'process_tasks_count',
-             'process_tasks_state_running', 'process_tasks_state_sleeping',
-             'process_tasks_state_uninterruptible_sleep',
-             'process_time_system', 'process_time_user'])
+            ['proc_ctx_involuntary', 'proc_ctx_voluntary',
+             'proc_maj_fault', 'proc_mem_rss', 'proc_mem_rss_max',
+             'proc_min_fault', 'proc_tasks_count',
+             'proc_tasks_state_running', 'proc_tasks_state_sleeping',
+             'proc_tasks_state_uninterruptible_sleep',
+             'proc_time_system', 'proc_time_user'])
 
     def test_get_metric_configs_with_pids(self):
         """If PIDs are specified, metrics include a "pid" label."""
@@ -71,7 +71,7 @@ class ProcessMetricsHandlerTests(TestCase):
             handler.get_metric_configs(), self.registry)
         handler.update_metrics(metrics)
         # check value of a sample metric
-        metric = metrics['process_min_fault']
+        metric = metrics['proc_min_fault']
         [(_, labels1, value1), (_, labels2, value2)] = sorted(
             metric._samples(), key=itemgetter(2))
         self.assertEqual(labels1, {'cmd': 'exec1'})
@@ -100,7 +100,7 @@ class ProcessMetricsHandlerTests(TestCase):
         metrics = create_metrics(handler.get_metric_configs(), self.registry)
         handler.update_metrics(metrics)
         # check value of a sample metric
-        metric = metrics['process_min_fault']
+        metric = metrics['proc_min_fault']
         [(_, labels1, _), (_, labels2, _)] = sorted(
             metric._samples(), key=itemgetter(2))
         self.assertEqual(labels1['pid'], '10')
@@ -116,5 +116,5 @@ class ProcessMetricsHandlerTests(TestCase):
             self.handler.get_metric_configs(), self.registry)
         self.handler.update_metrics(metrics)
         self.assertIn(
-            'empty value for metric "process_time_system" on PID 10',
+            'empty value for metric "proc_time_system" on PID 10',
             self.logger.output)

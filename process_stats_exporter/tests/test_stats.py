@@ -43,14 +43,14 @@ class ProcessStatsCollectorTests(LxStatsTestCase):
         metrics = self.collector.metrics()
         self.assertEqual(
             [metric.name for metric in metrics],
-            ['process_time_user',
-             'process_time_system',
-             'process_mem_rss',
-             'process_mem_rss_max',
-             'process_maj_fault',
-             'process_min_fault',
-             'process_ctx_involuntary',
-             'process_ctx_voluntary'])
+            ['proc_time_user',
+             'proc_time_system',
+             'proc_mem_rss',
+             'proc_mem_rss_max',
+             'proc_maj_fault',
+             'proc_min_fault',
+             'proc_ctx_involuntary',
+             'proc_ctx_voluntary'])
 
     def test_collect(self):
         """Stats for a process can be collected."""
@@ -68,14 +68,14 @@ class ProcessStatsCollectorTests(LxStatsTestCase):
                 '''))
         self.assertEqual(
             self.collector.collect(process),
-            {'process_time_user': 13,
-             'process_time_system': 14,
-             'process_mem_rss': 23,
-             'process_mem_rss_max': 102400,
-             'process_maj_fault': 11,
-             'process_min_fault': 9,
-             'process_ctx_involuntary': 1000,
-             'process_ctx_voluntary': 2000})
+            {'proc_time_user': 13,
+             'proc_time_system': 14,
+             'proc_mem_rss': 23,
+             'proc_mem_rss_max': 102400,
+             'proc_maj_fault': 11,
+             'proc_min_fault': 9,
+             'proc_ctx_involuntary': 1000,
+             'proc_ctx_voluntary': 2000})
 
 
 class ProcessTasksStatsCollectorTests(LxStatsTestCase):
@@ -89,10 +89,10 @@ class ProcessTasksStatsCollectorTests(LxStatsTestCase):
         metrics = self.collector.metrics()
         self.assertEqual(
             [metric.name for metric in metrics],
-            ['process_tasks_count',
-             'process_tasks_state_running',
-             'process_tasks_state_sleeping',
-             'process_tasks_state_uninterruptible_sleep'])
+            ['proc_tasks_count',
+             'proc_tasks_state_running',
+             'proc_tasks_state_sleeping',
+             'proc_tasks_state_uninterruptible_sleep'])
 
     def test_collect(self):
         """Stats for process tasks can be collected."""
@@ -113,7 +113,7 @@ class ProcessTasksStatsCollectorTests(LxStatsTestCase):
             content='1 2 R')
         self.assertEqual(
             self.collector.collect(process),
-            {'process_tasks_count': 3,
-             'process_tasks_state_running': 2,
-             'process_tasks_state_sleeping': 0,
-             'process_tasks_state_uninterruptible_sleep': 1})
+            {'proc_tasks_count': 3,
+             'proc_tasks_state_running': 2,
+             'proc_tasks_state_sleeping': 0,
+             'proc_tasks_state_uninterruptible_sleep': 1})
