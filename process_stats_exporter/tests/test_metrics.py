@@ -5,9 +5,7 @@ from operator import itemgetter
 
 from fixtures import LoggerFixture
 
-from prometheus_client import CollectorRegistry
-
-from prometheus_aioexporter.metric import create_metrics
+from prometheus_aioexporter.metric import MetricsRegistry
 
 from lxstats.testing import TestCase
 from lxstats.process import Process
@@ -27,7 +25,6 @@ class ProcessMetricsHandlerTests(TestCase):
         self.handler = ProcessMetricsHandler(
             logging.getLogger('test'), pids=['10', '20'],
             get_process_iterator=lambda **kwargs: self.labelers_processes)
-        self.registry = CollectorRegistry()
 
     def test_get_metric_configs(self):
         """MetricConfigs are returned for process metrics."""
@@ -67,8 +64,8 @@ class ProcessMetricsHandlerTests(TestCase):
         handler = ProcessMetricsHandler(
             logging.getLogger('test'), cmdline_regexps=[re.compile('exec.*')],
             get_process_iterator=lambda **kwargs: self.labelers_processes)
-        metrics = create_metrics(
-            handler.get_metric_configs(), self.registry)
+        metrics = MetricsRegistry().create_metrics(
+            handler.get_metric_configs())
         handler.update_metrics(metrics)
         # check value of a sample metric
         metric = metrics['proc_min_fault']
@@ -97,7 +94,8 @@ class ProcessMetricsHandlerTests(TestCase):
         self.make_process_file(
             20, 'stat', content=' '.join(str(i) for i in range(45, 90)))
         self.make_process_dir(20, 'task')
-        metrics = create_metrics(handler.get_metric_configs(), self.registry)
+        metrics = MetricsRegistry().create_metrics(
+            handler.get_metric_configs())
         handler.update_metrics(metrics)
         # check value of a sample metric
         metric = metrics['proc_min_fault']
@@ -112,8 +110,8 @@ class ProcessMetricsHandlerTests(TestCase):
             [(PidLabeler(),
               Process(10, os.path.join(self.tempdir.path, '10')))])
         self.make_process_dir(10, 'task')
-        metrics = create_metrics(
-            self.handler.get_metric_configs(), self.registry)
+        metrics = MetricsRegistry().create_metrics(
+            self.handler.get_metric_configs())
         self.handler.update_metrics(metrics)
         self.assertIn(
             'empty value for metric "proc_time_system" on PID 10',
