@@ -1,4 +1,3 @@
-import os
 import re
 from unittest import TestCase
 
@@ -43,7 +42,7 @@ class CmdlineLabelerTests(LxStatsTestCase):
     def test_call(self):
         """The labeler returns a label with the process "cmd"."""
         self.make_process_file(10, 'comm', content='exec')
-        process = Process(10, os.path.join(self.tempdir.path, '10'))
+        process = Process(10, self.tempdir.path / '10')
         process.collect_stats()
         labeler = CmdlineLabeler(re.compile('exec'))
         self.assertEqual(labeler(process), {'cmd': 'exec'})
@@ -51,7 +50,7 @@ class CmdlineLabelerTests(LxStatsTestCase):
     def test_call_with_groups(self):
         """The labeler returns labels with regexp matches."""
         self.make_process_file(10, 'cmdline', content='/path/to/exec')
-        process = Process(10, os.path.join(self.tempdir.path, '10'))
+        process = Process(10, self.tempdir.path / '10')
         process.collect_stats()
         labeler = CmdlineLabeler(re.compile('(.*)/exec'))
         self.assertEqual(labeler(process), {'match_1': '/path/to'})
@@ -59,7 +58,7 @@ class CmdlineLabelerTests(LxStatsTestCase):
     def test_call_with_named_groups(self):
         """The labeler returns labels with named regexp matches."""
         self.make_process_file(10, 'cmdline', content='/path/to/exec')
-        process = Process(10, os.path.join(self.tempdir.path, '10'))
+        process = Process(10, self.tempdir.path / '10')
         process.collect_stats()
         labeler = CmdlineLabeler(re.compile('(?P<prefix>.*)/exec'))
         self.assertEqual(labeler(process), {'prefix': '/path/to'})

@@ -1,4 +1,3 @@
-import os
 from textwrap import dedent
 from unittest import TestCase
 
@@ -6,9 +5,10 @@ from lxstats.testing import TestCase as LxStatsTestCase
 from lxstats.process import Process
 
 from ..stats import (
-    StatsCollector,
     ProcessStatsCollector,
-    ProcessTasksStatsCollector)
+    ProcessTasksStatsCollector,
+    StatsCollector,
+)
 
 
 class StatsCollectorTests(TestCase):
@@ -55,7 +55,7 @@ class ProcessStatsCollectorTests(LxStatsTestCase):
     def test_collect(self):
         """Stats for a process can be collected."""
         pid = 10
-        process = Process(pid, os.path.join(self.tempdir.path, str(pid)))
+        process = Process(pid, self.tempdir.path / str(pid))
         self.make_process_file(
             pid, 'stat', content=' '.join(str(i) for i in range(45)))
         self.make_process_file(pid, 'status', content='VmHWM: 100 kB')
@@ -97,7 +97,7 @@ class ProcessTasksStatsCollectorTests(LxStatsTestCase):
     def test_collect(self):
         """Stats for process tasks can be collected."""
         pid = 10
-        process_dir = os.path.join(self.tempdir.path, str(pid))
+        process_dir = self.tempdir.path / str(pid)
         process = Process(pid, process_dir)
         self.make_process_dir(pid, 'task/123')
         self.make_process_dir(pid, 'task/456')

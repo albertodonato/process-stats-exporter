@@ -1,19 +1,17 @@
-import os
-import re
 import logging
 from operator import itemgetter
+import re
 
 from fixtures import LoggerFixture
-
-from prometheus_aioexporter.metric import MetricsRegistry
-
-from lxstats.testing import TestCase
 from lxstats.process import Process
+from lxstats.testing import TestCase
+from prometheus_aioexporter.metric import MetricsRegistry
 
 from ..metrics import ProcessMetricsHandler
 from ..label import (
+    CmdlineLabeler,
     PidLabeler,
-    CmdlineLabeler)
+)
 
 
 class ProcessMetricsHandlerTests(TestCase):
@@ -50,9 +48,9 @@ class ProcessMetricsHandlerTests(TestCase):
         """Metrics are updated with values from procesess."""
         self.labelers_processes.extend(
             [(CmdlineLabeler(re.compile('exec.*')),
-              Process(10, os.path.join(self.tempdir.path, '10'))),
+              Process(10, self.tempdir.path / '10')),
              (CmdlineLabeler(re.compile('exec.*')),
-              Process(20, os.path.join(self.tempdir.path, '20')))])
+              Process(20, self.tempdir.path / '20'))])
         self.make_process_file(10, 'comm', content='exec1')
         self.make_process_file(
             10, 'stat', content=' '.join(str(i) for i in range(45)))
@@ -80,9 +78,9 @@ class ProcessMetricsHandlerTests(TestCase):
         """Metrics include the "pid" label if PIDs are specified."""
         self.labelers_processes.extend(
             [(PidLabeler(),
-              Process(10, os.path.join(self.tempdir.path, '10'))),
+              Process(10, self.tempdir.path / '10')),
              (PidLabeler(),
-              Process(20, os.path.join(self.tempdir.path, '20')))])
+              Process(20, self.tempdir.path / '20'))])
         handler = ProcessMetricsHandler(
             logging.getLogger('test'), pids=['10', '20'],
             get_process_iterator=lambda **kwargs: self.labelers_processes)
@@ -107,8 +105,7 @@ class ProcessMetricsHandlerTests(TestCase):
     def test_log_empty_values(self):
         """A message is logged for empty metric values."""
         self.labelers_processes.extend(
-            [(PidLabeler(),
-              Process(10, os.path.join(self.tempdir.path, '10')))])
+            [(PidLabeler(), Process(10, self.tempdir.path / '10'))])
         self.make_process_dir(10, 'task')
         metrics = MetricsRegistry().create_metrics(
             self.handler.get_metric_configs())
