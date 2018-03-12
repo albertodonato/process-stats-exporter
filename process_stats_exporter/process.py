@@ -15,12 +15,11 @@ from .label import (
 def get_process_iterator(proc='/proc', pids=None, cmdline_regexps=None):
     """Return an iterator yielding tuples with (Labeler, Process).
 
-    Parameters:
-      proc: the path to the ``/proc`` directory.
-      pids: a list of PIDs of process to return. If this is specified,
-            other filters are ignored.
-      cmdline_regexps: a list of strings with regexps to filter process
-                       command line.
+    :param str proc: the path to the ``/proc`` directory.
+    :param list pids: a list of PIDs of process to return. If this is
+        specified, other filters are ignored.
+    :param list cmdline_regexps: a list of strings with regexps to filter
+        process command line.
 
     """
     if pids:
