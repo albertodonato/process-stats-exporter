@@ -1,5 +1,4 @@
 import logging
-from operator import itemgetter
 import re
 
 from fixtures import LoggerFixture
