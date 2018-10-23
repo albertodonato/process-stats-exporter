@@ -24,6 +24,13 @@ class ProcessMetricsHandlerTests(TestCase):
             logging.getLogger('test'), pids=['10', '20'],
             get_process_iterator=lambda **kwargs: self.labelers_processes)
 
+    def get_samples(self, metric):
+        """Return tuples with (labels, value) for a metric."""
+        return sorted(
+            (value, labels)
+            for prefix, labels, value in metric._samples()
+            if prefix == '_total')
+
     def test_get_metric_configs(self):
         """MetricConfigs are returned for process metrics."""
         metric_configs = self.handler.get_metric_configs()
@@ -67,8 +74,7 @@ class ProcessMetricsHandlerTests(TestCase):
         handler.update_metrics(metrics)
         # check value of a sample metric
         metric = metrics['proc_min_fault']
-        [(_, labels1, value1), (_, labels2, value2)] = sorted(
-            metric._samples(), key=itemgetter(2))
+        [(value1, labels1), (value2, labels2)] = self.get_samples(metric)
         self.assertEqual(labels1, {'cmd': 'exec1'})
         self.assertEqual(value1, 9.0)
         self.assertEqual(labels2, {'cmd': 'exec2'})
@@ -97,8 +103,7 @@ class ProcessMetricsHandlerTests(TestCase):
         handler.update_metrics(metrics)
         # check value of a sample metric
         metric = metrics['proc_min_fault']
-        [(_, labels1, _), (_, labels2, _)] = sorted(
-            metric._samples(), key=itemgetter(2))
+        [(_, labels1), (_, labels2)] = self.get_samples(metric)
         self.assertEqual(labels1['pid'], '10')
         self.assertEqual(labels2['pid'], '20')
 
