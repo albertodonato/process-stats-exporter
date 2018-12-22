@@ -1,11 +1,11 @@
 """Collect metrics for processes and tasks"""
 
 from collections import (
+    defaultdict,
     namedtuple,
-    defaultdict)
+)
 
 from prometheus_aioexporter.metric import MetricConfig
-
 
 ProcessStat = namedtuple(
     'ProcessStat', ['metric', 'type', 'description', 'stat'])
@@ -37,8 +37,8 @@ class ProcessStatsCollector(StatsCollector):
             'proc_time_user', 'counter', 'Time scheduled in user mode',
             'stat.utime'),
         ProcessStat(
-            'proc_time_system', 'counter',
-            'Time scheduled in kernel mode', 'stat.stime'),
+            'proc_time_system', 'counter', 'Time scheduled in kernel mode',
+            'stat.stime'),
         ProcessStat(
             'proc_mem_rss', 'gauge', 'Memory resident segment size (RSS)',
             'stat.rss'),
@@ -65,8 +65,8 @@ class ProcessStatsCollector(StatsCollector):
         return [
             MetricConfig(
                 stat.metric, stat.description, stat.type,
-                {'labels': self.labels})
-            for stat in self._STATS]
+                {'labels': self.labels}) for stat in self._STATS
+        ]
 
     def collect(self, process):
         process.collect_stats()
@@ -94,8 +94,8 @@ class ProcessTasksStatsCollector(StatsCollector):
         return [
             MetricConfig(
                 stat.metric, stat.description, stat.type,
-                {'labels': self.labels})
-            for stat in self._STATS]
+                {'labels': self.labels}) for stat in self._STATS
+        ]
 
     def collect(self, process):
         tasks = process.tasks()
@@ -107,4 +107,5 @@ class ProcessTasksStatsCollector(StatsCollector):
             'proc_tasks_count': len(tasks),
             'proc_tasks_state_running': state_counts['R'],
             'proc_tasks_state_sleeping': state_counts['S'],
-            'proc_tasks_state_uninterruptible_sleep': state_counts['D']}
+            'proc_tasks_state_uninterruptible_sleep': state_counts['D']
+        }

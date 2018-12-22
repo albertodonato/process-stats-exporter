@@ -39,7 +39,8 @@ class CmdlineLabeler:
         if groups:
             return {
                 '{}_{}'.format(self._match_prefix, idx): group
-                for idx, group in enumerate(groups, 1)}
+                for idx, group in enumerate(groups, 1)
+            }
 
         return {'cmd': process.get('comm')}
 
@@ -50,5 +51,6 @@ class CmdlineLabeler:
         if self._regexp.groups:
             return {
                 '{}_{}'.format(self._match_prefix, idx)
-                for idx in range(1, self._regexp.groups + 1)}
+                for idx in range(1, self._regexp.groups + 1)
+            }
         return {'cmd'}

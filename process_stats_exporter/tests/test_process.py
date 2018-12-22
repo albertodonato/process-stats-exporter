@@ -2,10 +2,11 @@ import re
 
 from lxstats.testing import TestCase
 
-from ..process import get_process_iterator
 from ..label import (
+    CmdlineLabeler,
     PidLabeler,
-    CmdlineLabeler)
+)
+from ..process import get_process_iterator
 
 
 class GetProcessIteratorTests(TestCase):
@@ -30,7 +31,8 @@ class GetProcessIteratorTests(TestCase):
         self.make_process_file(40, 'cmdline', content='something\x00else\x00')
         iterator = get_process_iterator(
             proc=self.tempdir.path,
-            cmdline_regexps=[re.compile('foo'), re.compile('baz')])
+            cmdline_regexps=[re.compile('foo'),
+                             re.compile('baz')])
         labelers, processes = zip(*iterator)
         for labeler in labelers:
             self.assertIsInstance(labeler, CmdlineLabeler)

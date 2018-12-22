@@ -5,8 +5,9 @@ from lxstats.process import Process
 from lxstats.testing import TestCase as LxStatsTestCase
 
 from ..label import (
+    CmdlineLabeler,
     PidLabeler,
-    CmdlineLabeler)
+)
 
 
 class PidLabelerTests(TestCase):

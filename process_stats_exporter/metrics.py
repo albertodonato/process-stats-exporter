@@ -2,20 +2,27 @@
 
 from itertools import chain
 
+from .label import (
+    CmdlineLabeler,
+    PidLabeler,
+)
+from .process import get_process_iterator
 from .stats import (
     ProcessStatsCollector,
-    ProcessTasksStatsCollector)
-from .process import get_process_iterator
-from .label import (
-    PidLabeler,
-    CmdlineLabeler)
+    ProcessTasksStatsCollector,
+)
 
 
 class ProcessMetricsHandler:
     """Handle metrics for processes."""
 
-    def __init__(self, logger, pids=None, cmdline_regexps=None, labels=None,
-                 get_process_iterator=get_process_iterator):
+    def __init__(
+            self,
+            logger,
+            pids=None,
+            cmdline_regexps=None,
+            labels=None,
+            get_process_iterator=get_process_iterator):
         self.logger = logger
         self._pids = pids or ()
         self._cmdline_regexps = cmdline_regexps or ()
@@ -25,12 +32,13 @@ class ProcessMetricsHandler:
         label_names = self._get_label_names()
         self._collectors = [
             ProcessStatsCollector(labels=label_names),
-            ProcessTasksStatsCollector(labels=label_names)]
+            ProcessTasksStatsCollector(labels=label_names)
+        ]
 
     def get_metric_configs(self):
         """Return a list of MetricConfigs."""
-        return list(chain(
-            *(collector.metrics() for collector in self._collectors)))
+        return list(
+            chain(*(collector.metrics() for collector in self._collectors)))
 
     def update_metrics(self, metrics):
         """Update the specified metrics for processes."""

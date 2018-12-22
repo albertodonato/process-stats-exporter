@@ -5,11 +5,13 @@ from itertools import chain
 from lxstats.process import (
     Collection,
     Collector,
-    CommandLineFilter)
+    CommandLineFilter,
+)
 
 from .label import (
+    CmdlineLabeler,
     PidLabeler,
-    CmdlineLabeler)
+)
 
 
 def get_process_iterator(proc='/proc', pids=None, cmdline_regexps=None):

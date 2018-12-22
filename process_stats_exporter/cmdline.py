@@ -1,8 +1,7 @@
 """Actions for command line parsing and validation."""
 
-import re
 from argparse import Action
-
+import re
 
 LABEL_RE = re.compile(r'[a-z][a-z0-9_]+$')
 
@@ -21,8 +20,7 @@ class LabelAction(Action):
                         value))
                 return
             if not LABEL_RE.match(label):
-                parser.error(
-                    'invalid label: {}'.format(label))
+                parser.error('invalid label: {}'.format(label))
                 return
             labels[label] = value
 

@@ -1,38 +1,37 @@
 from pathlib import Path
+
 from setuptools import (
     find_packages,
     setup,
 )
 
-from process_stats_exporter import (
-    __doc__ as description,
-    __version__,
-)
-
-
-tests_require = ['toolrack']
+tests_require = ['pytest']
 
 config = {
     'name': 'process-stats-exporter',
-    'version': __version__,
+    'version': '0.0.1',
     'license': 'GPLv3+',
-    'description': description,
+    'description': 'Export Prometheus metrics for processes and tasks',
     'long_description': Path('README.rst').read_text(),
     'author': 'Alberto Donato',
     'author_email': 'alberto.donato@gmail.com',
     'maintainer': 'Alberto Donato',
     'maintainer_email': 'alberto.donato@gmail.com',
     'url': 'https://github.com/albertodonato/process-stats-exporter',
-    'packages': find_packages(),
+    'packages': find_packages(
+        include=['process_stats_exporter', 'process_stats_exporter.*']),
     'include_package_data': True,
-    'entry_points': {'console_scripts': [
-        'process-stats-exporter = process_stats_exporter.main:script']},
+    'entry_points': {
+        'console_scripts': [
+            'process-stats-exporter = process_stats_exporter.main:script'
+        ]
+    },
     'test_suite': 'process_stats_exporter',
-    'install_requires': [
-        'lxstats',
-        'prometheus_aioexporter'],
+    'install_requires': ['lxstats', 'prometheus_aioexporter'],
     'tests_require': tests_require,
-    'extras_require': {'testing': tests_require},
+    'extras_require': {
+        'testing': tests_require
+    },
     'keywords': 'metric prometheus process exporter',
     'classifiers': [
         'Development Status :: 4 - Beta',
@@ -40,7 +39,8 @@ config = {
         'License :: OSI Approved :: GNU General Public License (GPL)',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Topic :: Utilities']}
+        'Programming Language :: Python :: 3.7', 'Topic :: Utilities'
+    ]
+}
 
 setup(**config)

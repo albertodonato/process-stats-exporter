@@ -2,8 +2,9 @@ import argparse
 from unittest import TestCase
 
 from ..cmdline import (
+    CmdlineRegexpAction,
     LabelAction,
-    CmdlineRegexpAction)
+)
 
 
 class LabelActionTests(TestCase):
@@ -52,9 +53,10 @@ class CmdlineRegexpActionTests(TestCase):
         """If a regexp is malformed, an error is raised."""
         self.parser.parse_args(['-R', '(?P<wrong.*)'])
         self.assertEqual(
-            self.error_messages,
-            ["compiling regexp '(?P<wrong.*)': missing >, unterminated name "
-             "at position 4"])
+            self.error_messages, [
+                "compiling regexp '(?P<wrong.*)': missing >, unterminated "
+                "name at position 4"
+            ])
 
     def test_invalid_regexp_group_name(self):
         """If a regexp group name is invalid as label, an error is raised."""
