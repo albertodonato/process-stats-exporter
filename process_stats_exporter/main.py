@@ -1,5 +1,11 @@
 """Expose a Prometheus metrics endpoint with process stats."""
 
+from argparse import (
+    ArgumentParser,
+    Namespace,
+)
+
+from aiohttp.web import Application
 from prometheus_aioexporter.script import PrometheusExporterScript
 
 from .cmdline import (
@@ -14,7 +20,7 @@ class ProcessStatsExporter(PrometheusExporterScript):
 
     name = 'process-stats-exporter'
 
-    def configure_argument_parser(self, parser):
+    def configure_argument_parser(self, parser: ArgumentParser):
         parser.add_argument(
             '-P',
             '--pids',
@@ -38,15 +44,14 @@ class ProcessStatsExporter(PrometheusExporterScript):
             default={},
             help='add static label to all metrics (as "name=value")')
 
-    def configure(self, args):
+    def configure(self, args: Namespace):
         if args.pids:
-            self.logger.info(
-                'tracking stats for PIDs [{}]'.format(
-                    ', '.join(str(pid) for pid in args.pids)))
+            pidlist = ', '.join(str(pid) for pid in args.pids)
+            self.logger.info(f'tracking stats for PIDs [{pidlist}]')
         elif args.cmdline_regexps:
+            re_list = ', '.join(rexp.pattern for rexp in args.cmdline_regexps)
             self.logger.info(
-                'tracking stats for processes matching regexps [{}]'.format(
-                    ', '.join(rexp.pattern for rexp in args.cmdline_regexps)))
+                f'tracking stats for processes matching regexps [{re_list}]')
         else:
             self.exit('Error: no PID or process names specified')
 
@@ -57,7 +62,7 @@ class ProcessStatsExporter(PrometheusExporterScript):
             labels=args.labels)
         self.create_metrics(self._metric_handler.get_metric_configs())
 
-    async def on_application_startup(self, application):
+    async def on_application_startup(self, application: Application):
         # setup handler to update metrics on requests
         application.set_metric_update_handler(
             self._metric_handler.update_metrics)

@@ -1,30 +1,47 @@
 """Collect metrics for processes and tasks"""
 
-from collections import (
-    defaultdict,
-    namedtuple,
+from collections import defaultdict
+from typing import (
+    Any,
+    DefaultDict,
+    List,
+    Mapping,
+    NamedTuple,
+    Sequence,
 )
 
+from lxstats.process import Process
 from prometheus_aioexporter.metric import MetricConfig
 
-ProcessStat = namedtuple(
-    'ProcessStat', ['metric', 'type', 'description', 'stat'])
 
-ProcessTasksStat = namedtuple(
-    'ProcessTaskStat', ['metric', 'type', 'description'])
+class ProcessStat(NamedTuple):
+    """Definition for a process statistic."""
+
+    metric: str
+    type: str
+    description: str
+    stat: str
+
+
+class ProcessTasksStat(NamedTuple):
+    """Definition for a process task statistic."""
+
+    metric: str
+    type: str
+    description: str
 
 
 class StatsCollector:
     """Describe and collect metrics."""
 
-    def __init__(self, labels=()):
+    def __init__(self, labels: Sequence[str] = ()):
         self.labels = list(labels)
 
-    def metrics(self):
+    def metrics(self) -> List[MetricConfig]:
         """Return a list of MetricConfigs."""
         raise NotImplementedError('Subclasses must implement metrics()')
 
-    def collect(self, process):
+    def collect(self, process: Process) -> Mapping[str, Any]:
         """Return a dict mapping metric names to values for the process."""
         raise NotImplementedError('Subclasses must implement collect()')
 
@@ -61,14 +78,14 @@ class ProcessStatsCollector(StatsCollector):
             'Number of voluntary context switches',
             'sched.nr_voluntary_switches'))
 
-    def metrics(self):
+    def metrics(self) -> List[MetricConfig]:
         return [
             MetricConfig(
                 stat.metric, stat.description, stat.type,
                 {'labels': self.labels}) for stat in self._STATS
         ]
 
-    def collect(self, process):
+    def collect(self, process: Process) -> Mapping[str, Any]:
         process.collect_stats()
         return {stat.metric: process.get(stat.stat) for stat in self._STATS}
 
@@ -90,19 +107,20 @@ class ProcessTasksStatsCollector(StatsCollector):
             'Number of process tasks in uninterruptible sleep state'),
     )
 
-    def metrics(self):
+    def metrics(self) -> List[MetricConfig]:
         return [
             MetricConfig(
                 stat.metric, stat.description, stat.type,
                 {'labels': self.labels}) for stat in self._STATS
         ]
 
-    def collect(self, process):
+    def collect(self, process: Process) -> Mapping[str, int]:
         tasks = process.tasks()
-        state_counts = defaultdict(int)
+        state_counts: DefaultDict[str, int] = defaultdict(int)
         for task in tasks:
             task.collect_stats()
-            state_counts[task.get('stat.state')] += 1
+            state_id: str = task.get('stat.state')
+            state_counts[state_id] += 1
         return {
             'proc_tasks_count': len(tasks),
             'proc_tasks_state_running': state_counts['R'],

@@ -1,29 +1,43 @@
 """Helpers to collect processes."""
 
 from itertools import chain
+from typing import (
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+)
 
 from lxstats.process import (
     Collection,
     Collector,
     CommandLineFilter,
+    Process,
 )
 
 from .label import (
     CmdlineLabeler,
+    Labeler,
     PidLabeler,
 )
 
+ProcessIteratorResult = Iterable[Tuple[Labeler, Process]]
 
-def get_process_iterator(proc='/proc', pids=None, cmdline_regexps=None):
+
+def get_process_iterator(
+        proc: str = '/proc',
+        pids: Optional[List[str]] = None,
+        cmdline_regexps: Optional[List[str]] = None) -> ProcessIteratorResult:
     """Return an iterator yielding tuples with (Labeler, Process).
 
-    :param str proc: the path to the ``/proc`` directory.
-    :param list pids: a list of PIDs of process to return. If this is
+    :param proc: the path to the ``/proc`` directory.
+    :param pids: a list of PIDs of process to return. If this is
         specified, other filters are ignored.
-    :param list cmdline_regexps: a list of strings with regexps to filter
+    :param cmdline_regexps: a list of strings with regexps to filter
         process command line.
 
     """
+    labeler: Labeler
     if pids:
         labeler = PidLabeler()
         collection = Collection(collector=Collector(proc=proc, pids=pids))
