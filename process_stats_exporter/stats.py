@@ -11,7 +11,7 @@ from typing import (
 )
 
 from lxstats.process import Process
-from prometheus_aioexporter.metric import MetricConfig
+from prometheus_aioexporter import MetricConfig
 
 
 class ProcessStat(NamedTuple):
