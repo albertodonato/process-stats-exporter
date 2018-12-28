@@ -1,5 +1,6 @@
 import argparse
-from unittest import TestCase
+
+import pytest
 
 from ..cmdline import (
     CmdlineRegexpAction,
@@ -7,59 +8,65 @@ from ..cmdline import (
 )
 
 
-class LabelActionTests(TestCase):
+@pytest.fixture
+def error_messages():
+    yield []
 
-    def setUp(self):
-        self.parser = argparse.ArgumentParser()
-        self.parser.add_argument('-l', nargs='+', action=LabelAction)
-        self.error_messages = []
-        self.parser.error = self.error_messages.append
 
-    def test_parse_labels(self):
+@pytest.fixture
+def label_parser(error_messages):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--labels', nargs='+', action=LabelAction)
+    parser.error = error_messages.append
+    yield parser
+
+
+class TestLabelAction:
+
+    def test_parse_labels(self, label_parser, error_messages):
         """LabelAction parses labels into a dict mapping names to values."""
-        args = self.parser.parse_args(['-l', 'foo=bar', 'baz=bza'])
-        self.assertEqual(args.l, {'foo': 'bar', 'baz': 'bza'})
-        self.assertEqual(self.error_messages, [])
+        args = label_parser.parse_args(['--labels', 'foo=bar', 'baz=bza'])
+        assert args.labels == {'foo': 'bar', 'baz': 'bza'}
+        assert error_messages == []
 
-    def test_invalid_format(self):
+    def test_invalid_format(self, label_parser, error_messages):
         """If labels are not specified as name=value, an error is raised."""
-        self.parser.parse_args(['-l', 'foobar'])
-        self.assertEqual(
-            self.error_messages,
-            ['labels must be in the form "name=value": foobar'])
+        label_parser.parse_args(['--labels', 'foobar'])
+        assert error_messages == [
+            'labels must be in the form "name=value": foobar'
+        ]
 
-    def test_invalid_name(self):
+    def test_invalid_name(self, label_parser, error_messages):
         """Invalid label names raise an error."""
-        self.parser.parse_args(['-l', 'i am invalid=bar'])
-        self.assertEqual(self.error_messages, ['invalid label: i am invalid'])
+        label_parser.parse_args(['--labels', 'i am invalid=bar'])
+        assert error_messages == ['invalid label: i am invalid']
 
 
-class CmdlineRegexpActionTests(TestCase):
+@pytest.fixture
+def regexp_parser(error_messages):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--regexps', nargs='+', action=CmdlineRegexpAction)
+    parser.error = error_messages.append
+    yield parser
 
-    def setUp(self):
-        self.parser = argparse.ArgumentParser()
-        self.parser.add_argument('-R', nargs='+', action=CmdlineRegexpAction)
-        self.error_messages = []
-        self.parser.error = self.error_messages.append
 
-    def test_parse_regexps(self):
+class TestCmdlineRegexpAction:
+
+    def test_parse_regexps(self, regexp_parser, error_messages):
         """CmdlineRegexpAction parses and compiles strings into regexps."""
-        args = self.parser.parse_args(['-R', '.*bash', 'ls.*'])
-        self.assertEqual(
-            [regex.pattern for regex in args.R], ['.*bash', 'ls.*'])
-        self.assertEqual(self.error_messages, [])
+        args = regexp_parser.parse_args(['--regexps', '.*bash', 'ls.*'])
+        assert [regex.pattern for regex in args.regexps] == ['.*bash', 'ls.*']
+        assert error_messages == []
 
-    def test_invalid_regexp(self):
+    def test_invalid_regexp(self, regexp_parser, error_messages):
         """If a regexp is malformed, an error is raised."""
-        self.parser.parse_args(['-R', '(?P<wrong.*)'])
-        self.assertEqual(
-            self.error_messages, [
-                "compiling regexp '(?P<wrong.*)': missing >, unterminated "
-                "name at position 4"
-            ])
+        regexp_parser.parse_args(['--regexps', '(?P<wrong.*)'])
+        assert error_messages == [
+            "compiling regexp '(?P<wrong.*)': missing >, unterminated "
+            "name at position 4"
+        ]
 
-    def test_invalid_regexp_group_name(self):
+    def test_invalid_regexp_group_name(self, regexp_parser, error_messages):
         """If a regexp group name is invalid as label, an error is raised."""
-        self.parser.parse_args(['-R', '(?P<_invalid>.*)'])
-        self.assertEqual(
-            self.error_messages, ['regexp group not valid as label: _invalid'])
+        regexp_parser.parse_args(['--regexps', '(?P<_invalid>.*)'])
+        assert error_messages == ['regexp group not valid as label: _invalid']
