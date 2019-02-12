@@ -133,5 +133,5 @@ class TestProcessMetricsHandler:
             handler.get_metric_configs())
         handler.update_metrics(metrics)
         assert (
-            'empty value for metric "proc_time_system" on PID 10' in caplog.
-            messages)
+            'empty value for metric "proc_time_system" on PID 10' in
+            caplog.messages)
