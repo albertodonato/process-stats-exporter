@@ -11,28 +11,28 @@ from typing import (
     Optional,
 )
 
-LABEL_RE = re.compile(r'[a-z][a-z0-9_]+$')
+LABEL_RE = re.compile(r"[a-z][a-z0-9_]+$")
 
 
 class LabelAction(Action):
     """Action to parse and save labels from the command line."""
 
     def __call__(
-            self,
-            parser: ArgumentParser,
-            namespace: Namespace,
-            values: Any,
-            option_string: Optional[str] = None):
+        self,
+        parser: ArgumentParser,
+        namespace: Namespace,
+        values: Any,
+        option_string: Optional[str] = None,
+    ):
         labels = {}
         for value in values:
             try:
-                label, value = value.split('=')
+                label, value = value.split("=")
             except ValueError:
-                parser.error(
-                    f'labels must be in the form "name=value": {value}')
+                parser.error(f'labels must be in the form "name=value": {value}')
                 return
             if not LABEL_RE.match(label):
-                parser.error(f'invalid label: {label}')
+                parser.error(f"invalid label: {label}")
                 return
             labels[label] = value
 
@@ -43,23 +43,23 @@ class CmdlineRegexpAction(Action):
     """Action to parse and validate process command line regexps."""
 
     def __call__(
-            self,
-            parser: ArgumentParser,
-            namespace: Namespace,
-            values: Any,
-            option_string: Optional[str] = None):
+        self,
+        parser: ArgumentParser,
+        namespace: Namespace,
+        values: Any,
+        option_string: Optional[str] = None,
+    ):
         regexps = []
         for value in values:
             try:
                 regexp = re.compile(value)
             except Exception as e:
-                parser.error(f'compiling regexp {repr(value)}: {str(e)}')
+                parser.error(f"compiling regexp {repr(value)}: {str(e)}")
                 return
 
             for groupname in regexp.groupindex:
                 if not LABEL_RE.match(groupname):
-                    parser.error(
-                        f'regexp group not valid as label: {groupname}')
+                    parser.error(f"regexp group not valid as label: {groupname}")
                     return
 
             regexps.append(regexp)

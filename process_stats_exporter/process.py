@@ -25,9 +25,10 @@ ProcessIteratorResult = Iterable[Tuple[Labeler, Process]]
 
 
 def get_process_iterator(
-        proc: str = '/proc',
-        pids: Optional[List[str]] = None,
-        cmdline_regexps: Optional[List[str]] = None) -> ProcessIteratorResult:
+    proc: str = "/proc",
+    pids: Optional[List[str]] = None,
+    cmdline_regexps: Optional[List[str]] = None,
+) -> ProcessIteratorResult:
     """Return an iterator yielding tuples with (Labeler, Process).
 
     :param proc: the path to the ``/proc`` directory.
@@ -46,8 +47,7 @@ def get_process_iterator(
         collectors = []
         for cmdline_re in cmdline_regexps:
             collection = Collection(collector=Collector(proc=proc))
-            collection.add_filter(
-                CommandLineFilter(cmdline_re, include_args=True))
+            collection.add_filter(CommandLineFilter(cmdline_re, include_args=True))
             labeler = CmdlineLabeler(cmdline_re)
             collectors.append((labeler, process) for process in collection)
         return chain(*collectors)

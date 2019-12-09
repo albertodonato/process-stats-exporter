@@ -34,11 +34,11 @@ class PidLabeler(Labeler):
 
     def __call__(self, process: Process) -> Mapping[str, str]:
         """Return label values for the process."""
-        return {'pid': str(process.pid)}
+        return {"pid": str(process.pid)}
 
     def labels(self) -> Set[str]:
         """Return label names."""
-        return {'pid'}
+        return {"pid"}
 
 
 class CmdlineLabeler(Labeler):
@@ -50,7 +50,7 @@ class CmdlineLabeler(Labeler):
 
     """
 
-    _match_prefix = 'match'
+    _match_prefix = "match"
 
     def __init__(self, regexp):
         self._regexp = regexp
@@ -66,11 +66,11 @@ class CmdlineLabeler(Labeler):
         groups = match.groups()
         if groups:
             return {
-                f'{self._match_prefix}_{idx}': group
+                f"{self._match_prefix}_{idx}": group
                 for idx, group in enumerate(groups, 1)
             }
 
-        return {'cmd': process.get('comm')}
+        return {"cmd": process.get("comm")}
 
     def labels(self) -> Set[str]:
         """Return label names."""
@@ -78,7 +78,7 @@ class CmdlineLabeler(Labeler):
             return set(self._regexp.groupindex)
         if self._regexp.groups:
             return {
-                f'{self._match_prefix}_{idx}'
+                f"{self._match_prefix}_{idx}"
                 for idx in range(1, self._regexp.groups + 1)
             }
-        return {'cmd'}
+        return {"cmd"}

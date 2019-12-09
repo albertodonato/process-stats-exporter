@@ -6,7 +6,7 @@ import pytest
 @pytest.fixture
 def proc_dir(tmpdir):
     """A /proc path."""
-    path = Path(tmpdir / 'proc')
+    path = Path(tmpdir / "proc")
     path.mkdir()
     yield path
 
