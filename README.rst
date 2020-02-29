@@ -99,6 +99,6 @@ Additional static labels can be passed with the ``-l`` flag to tag all metrics
 .. _Prometheus: https://prometheus.io/
 
 .. |Build Status| image:: https://img.shields.io/travis/albertodonato/process-stats-exporter.svg
-   :target: https://travis-ci.org/albertodonato/process-stats-exporter
+   :target: https://travis-ci.com/albertodonato/process-stats-exporter
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/albertodonato/process-stats-exporter/master.svg
    :target: https://codecov.io/gh/albertodonato/process-stats-exporter
