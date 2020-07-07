@@ -1,7 +1,6 @@
 import re
 
 from lxstats.process import Process
-
 import pytest
 
 from ..label import (

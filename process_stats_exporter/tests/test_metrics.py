@@ -3,7 +3,6 @@ import re
 
 from lxstats.process import Process
 from prometheus_aioexporter import MetricsRegistry
-
 import pytest
 
 from ..label import (
