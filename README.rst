@@ -63,29 +63,29 @@ tagged with a ``"pid"`` label, with the PID of each matched process:
 When regexps are passed to match processes command line, labels are
 added based on the regexp:
 
--  if the regexp contains named groups (e.g. ``-R '^(?P<exe>.*sh)'``),
-   labels mapping the group name to match values are added:
+- if the regexp contains named groups (e.g. ``-R '^(?P<exe>.*sh)'``), labels
+  mapping the group name to match values are added:
 
-.. code::
+  .. code::
 
-    proc_mem_rss{exe="/bin/bash"} 1726.0
-    proc_mem_rss{exe="/bin/sh"} 4439.0
+      proc_mem_rss{exe="/bin/bash"} 1726.0
+      proc_mem_rss{exe="/bin/sh"} 4439.0
 
-- if the regexp contains unnamed groups, (e.g. ``-R '^(.*sh)'``),
-  ``match_<N>`` labels are added with match values:
+- if the regexp contains unnamed groups, (e.g. ``-R '^(.*sh)'``), ``match_<N>``
+  labels are added with match values:
 
-.. code::
+  .. code::
 
-    proc_mem_rss{match_1="/bin/bash"} 1726.0
-    proc_mem_rss{match_1="/bin/sh"} 4439.0
+      proc_mem_rss{match_1="/bin/bash"} 1726.0
+      proc_mem_rss{match_1="/bin/sh"} 4439.0
 
 - if the regexp contains no group (e.g. ``-R sh``), a ``"cmd"`` label with the
   process ``comm`` name is used:
 
-.. code::
+  .. code::
 
-    proc_mem_rss{cmd="bash"} 1726.0
-    proc_mem_rss{cmd="sh"} 4439.0
+      proc_mem_rss{cmd="bash"} 1726.0
+      proc_mem_rss{cmd="sh"} 4439.0
 
 Additional static labels can be passed with the ``-l`` flag to tag all metrics
 (e.g. ``-l foo=bar``):
