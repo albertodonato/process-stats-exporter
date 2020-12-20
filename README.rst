@@ -98,7 +98,9 @@ Additional static labels can be passed with the ``-l`` flag to tag all metrics
 
 .. _Prometheus: https://prometheus.io/
 
-.. |Build Status| image:: https://img.shields.io/travis/albertodonato/process-stats-exporter.svg
-   :target: https://travis-ci.com/albertodonato/process-stats-exporter
+.. |Build Status| image:: https://github.com/albertodonato/process-stats-exporter/workflows/CI/badge.svg
+   :alt: Build Status
+   :target: https://github.com/albertodonato/process-stats-exporter/actions?query=workflow%3ACI
 .. |Coverage Status| image:: https://img.shields.io/codecov/c/github/albertodonato/process-stats-exporter/master.svg
+   :alt: Coverage Status
    :target: https://codecov.io/gh/albertodonato/process-stats-exporter
