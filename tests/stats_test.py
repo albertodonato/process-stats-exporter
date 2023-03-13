@@ -3,7 +3,7 @@ from textwrap import dedent
 from lxstats.process import Process
 import pytest
 
-from ..stats import (
+from process_stats_exporter.stats import (
     ProcessStatsCollector,
     ProcessTasksStatsCollector,
     StatsCollector,

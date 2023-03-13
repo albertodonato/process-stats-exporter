@@ -2,7 +2,7 @@ import argparse
 
 import pytest
 
-from ..cmdline import (
+from process_stats_exporter.cmdline import (
     CmdlineRegexpAction,
     LabelAction,
 )
@@ -31,7 +31,9 @@ class TestLabelAction:
     def test_invalid_format(self, label_parser, error_messages):
         """If labels are not specified as name=value, an error is raised."""
         label_parser.parse_args(["--labels", "foobar"])
-        assert error_messages == ['labels must be in the form "name=value": foobar']
+        assert error_messages == [
+            'labels must be in the form "name=value": foobar'
+        ]
 
     def test_invalid_name(self, label_parser, error_messages):
         """Invalid label names raise an error."""

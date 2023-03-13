@@ -1,12 +1,7 @@
 """Helpers to collect processes."""
 
+from collections.abc import Iterable
 from itertools import chain
-from typing import (
-    Iterable,
-    List,
-    Optional,
-    Tuple,
-)
 
 from lxstats.process import (
     Collection,
@@ -21,13 +16,13 @@ from .label import (
     PidLabeler,
 )
 
-ProcessIteratorResult = Iterable[Tuple[Labeler, Process]]
+ProcessIteratorResult = Iterable[tuple[Labeler, Process]]
 
 
 def get_process_iterator(
     proc: str = "/proc",
-    pids: Optional[List[str]] = None,
-    cmdline_regexps: Optional[List[str]] = None,
+    pids: list[str] | None = None,
+    cmdline_regexps: list[str] | None = None,
 ) -> ProcessIteratorResult:
     """Return an iterator yielding tuples with (Labeler, Process).
 
@@ -47,7 +42,9 @@ def get_process_iterator(
         collectors = []
         for cmdline_re in cmdline_regexps:
             collection = Collection(collector=Collector(proc=proc))
-            collection.add_filter(CommandLineFilter(cmdline_re, include_args=True))
+            collection.add_filter(
+                CommandLineFilter(cmdline_re, include_args=True)
+            )
             labeler = CmdlineLabeler(cmdline_re)
             collectors.append((labeler, process) for process in collection)
         return chain(*collectors)

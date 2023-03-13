@@ -1,14 +1,9 @@
 """Create and update metrics."""
 
+from collections.abc import Callable
 from itertools import chain
 from logging import Logger
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-)
+from typing import Any
 
 from lxstats.process import Process
 from prometheus_aioexporter import MetricConfig
@@ -38,9 +33,9 @@ class ProcessMetricsHandler:
     def __init__(
         self,
         logger: Logger,
-        pids: Optional[List[str]] = None,
-        cmdline_regexps: Optional[List[str]] = None,
-        labels: Optional[Dict[str, str]] = None,
+        pids: list[str] | None = None,
+        cmdline_regexps: list[str] | None = None,
+        labels: dict[str, str] | None = None,
         get_process_iterator: ProcessIterator = get_process_iterator,
     ):
         self.logger = logger
@@ -50,26 +45,30 @@ class ProcessMetricsHandler:
         self._get_process_iterator = get_process_iterator
 
         label_names = self._get_label_names()
-        self._collectors: List[StatsCollector] = [
+        self._collectors: list[StatsCollector] = [
             ProcessStatsCollector(labels=label_names),
             ProcessTasksStatsCollector(labels=label_names),
         ]
 
-    def get_metric_configs(self) -> List[MetricConfig]:
+    def get_metric_configs(self) -> list[MetricConfig]:
         """Return a list of MetricConfigs."""
-        return list(chain(*(collector.metrics() for collector in self._collectors)))
+        return list(
+            chain(*(collector.metrics() for collector in self._collectors))
+        )
 
-    def update_metrics(self, metrics: Dict[str, Metric]):
+    def update_metrics(self, metrics: dict[str, Metric]):
         """Update the specified metrics for processes."""
         process_iter = self._get_process_iterator(
             pids=self._pids, cmdline_regexps=self._cmdline_regexps
         )
         for labeler, process in process_iter:
-            metric_values: Dict[str, Any] = {}
+            metric_values: dict[str, Any] = {}
             for collector in self._collectors:
                 metric_values.update(collector.collect(process))
             for name, metric in metrics.items():
-                self._update_metric(labeler, process, name, metric, metric_values[name])
+                self._update_metric(
+                    labeler, process, name, metric, metric_values[name]
+                )
 
     def _update_metric(
         self,
@@ -94,7 +93,7 @@ class ProcessMetricsHandler:
         elif metric._type == "gauge":
             metric.set(value)
 
-    def _get_label_names(self) -> List[str]:
+    def _get_label_names(self) -> list[str]:
         """Return a set of label names."""
         labels = set(self._labels)
         for regexp in self._cmdline_regexps:

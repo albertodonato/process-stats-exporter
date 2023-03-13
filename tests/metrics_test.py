@@ -5,11 +5,11 @@ from lxstats.process import Process
 from prometheus_aioexporter import MetricsRegistry
 import pytest
 
-from ..label import (
+from process_stats_exporter.label import (
     CmdlineLabeler,
     PidLabeler,
 )
-from ..metrics import ProcessMetricsHandler
+from process_stats_exporter.metrics import ProcessMetricsHandler
 
 
 @pytest.fixture
@@ -29,9 +29,9 @@ def handler(labelers_processes):
 def get_samples(metric):
     """Return tuples with (labels, value) for a metric."""
     return sorted(
-        (value, labels)
-        for prefix, labels, value in metric._samples()
-        if prefix == "_total"
+        (sample.value, sample.labels)
+        for sample in metric._samples()
+        if sample.name == "_total"
     )
 
 
@@ -63,16 +63,26 @@ class TestProcessMetricsHandler:
         """Metrics are updated with values from procesess."""
         process_10_dir = make_process_dir(10)
         (process_10_dir / "comm").write_text("exec1")
-        (process_10_dir / "stat").write_text(" ".join(str(i) for i in range(45)))
+        (process_10_dir / "stat").write_text(
+            " ".join(str(i) for i in range(45))
+        )
         (process_10_dir / "task").mkdir()
         process_20_dir = make_process_dir(20)
         (process_20_dir / "comm").write_text("exec2")
-        (process_20_dir / "stat").write_text(" ".join(str(i) for i in range(45, 90)))
+        (process_20_dir / "stat").write_text(
+            " ".join(str(i) for i in range(45, 90))
+        )
         (process_20_dir / "task").mkdir()
         labelers_processes.extend(
             [
-                (CmdlineLabeler(re.compile("exec.*")), Process(10, process_10_dir)),
-                (CmdlineLabeler(re.compile("exec.*")), Process(20, process_20_dir)),
+                (
+                    CmdlineLabeler(re.compile("exec.*")),
+                    Process(10, process_10_dir),
+                ),
+                (
+                    CmdlineLabeler(re.compile("exec.*")),
+                    Process(20, process_20_dir),
+                ),
             ]
         )
 
@@ -81,7 +91,9 @@ class TestProcessMetricsHandler:
             cmdline_regexps=[re.compile("exec.*")],
             get_process_iterator=lambda **kwargs: labelers_processes,
         )
-        metrics = MetricsRegistry().create_metrics(handler.get_metric_configs())
+        metrics = MetricsRegistry().create_metrics(
+            handler.get_metric_configs()
+        )
         handler.update_metrics(metrics)
         # check value of a sample metric
         metric = metrics["proc_min_fault"]
@@ -90,7 +102,9 @@ class TestProcessMetricsHandler:
             (54.0, {"cmd": "exec2"}),
         ]
 
-    def test_update_metrics_with_pids(self, make_process_dir, labelers_processes):
+    def test_update_metrics_with_pids(
+        self, make_process_dir, labelers_processes
+    ):
         """Metrics include the "pid" label if PIDs are specified."""
         process_10_dir = make_process_dir(10)
         process_20_dir = make_process_dir(20)
@@ -106,12 +120,18 @@ class TestProcessMetricsHandler:
             get_process_iterator=lambda **kwargs: labelers_processes,
         )
         (process_10_dir / "comm").write_text("exec1")
-        (process_10_dir / "stat").write_text(" ".join(str(i) for i in range(45)))
+        (process_10_dir / "stat").write_text(
+            " ".join(str(i) for i in range(45))
+        )
         (process_10_dir / "task").mkdir()
         (process_20_dir / "comm").write_text("exec2")
-        (process_20_dir / "stat").write_text(" ".join(str(i) for i in range(45, 90)))
+        (process_20_dir / "stat").write_text(
+            " ".join(str(i) for i in range(45, 90))
+        )
         (process_20_dir / "task").mkdir()
-        metrics = MetricsRegistry().create_metrics(handler.get_metric_configs())
+        metrics = MetricsRegistry().create_metrics(
+            handler.get_metric_configs()
+        )
         handler.update_metrics(metrics)
         # check value of a sample metric
         metric = metrics["proc_min_fault"]
@@ -128,6 +148,11 @@ class TestProcessMetricsHandler:
         process_dir = make_process_dir(10)
         (process_dir / "task").mkdir()
         labelers_processes.extend([(PidLabeler(), Process(10, process_dir))])
-        metrics = MetricsRegistry().create_metrics(handler.get_metric_configs())
+        metrics = MetricsRegistry().create_metrics(
+            handler.get_metric_configs()
+        )
         handler.update_metrics(metrics)
-        assert 'empty value for metric "proc_time_system" on PID 10' in caplog.messages
+        assert (
+            'empty value for metric "proc_time_system" on PID 10'
+            in caplog.messages
+        )

@@ -22,7 +22,12 @@ class ProcessStatsExporter(PrometheusExporterScript):
 
     def configure_argument_parser(self, parser: ArgumentParser):
         parser.add_argument(
-            "-P", "--pids", nargs="+", type=int, metavar="pid", help="process PID"
+            "-P",
+            "--pids",
+            nargs="+",
+            type=int,
+            metavar="pid",
+            help="process PID",
         )
         parser.add_argument(
             "-R",

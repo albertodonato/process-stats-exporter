@@ -1,10 +1,7 @@
 """Labelers to return metric labels for processes."""
 
 import abc
-from typing import (
-    Mapping,
-    Set,
-)
+from collections.abc import Mapping
 
 from lxstats.process import Process
 
@@ -21,7 +18,7 @@ class Labeler(abc.ABC):
         """
 
     @abc.abstractmethod
-    def labels(self) -> Set[str]:
+    def labels(self) -> set[str]:
         """Return a set of label names.
 
         Subclasses must implement this method.
@@ -36,7 +33,7 @@ class PidLabeler(Labeler):
         """Return label values for the process."""
         return {"pid": str(process.pid)}
 
-    def labels(self) -> Set[str]:
+    def labels(self) -> set[str]:
         """Return label names."""
         return {"pid"}
 
@@ -72,7 +69,7 @@ class CmdlineLabeler(Labeler):
 
         return {"cmd": process.get("comm")}
 
-    def labels(self) -> Set[str]:
+    def labels(self) -> set[str]:
         """Return label names."""
         if self._regexp.groupindex:
             return set(self._regexp.groupindex)

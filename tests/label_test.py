@@ -3,7 +3,7 @@ import re
 from lxstats.process import Process
 import pytest
 
-from ..label import (
+from process_stats_exporter.label import (
     CmdlineLabeler,
     PidLabeler,
 )

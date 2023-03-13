@@ -1,10 +1,10 @@
 import re
 
-from ..label import (
+from process_stats_exporter.label import (
     CmdlineLabeler,
     PidLabeler,
 )
-from ..process import get_process_iterator
+from process_stats_exporter.process import get_process_iterator
 
 
 class TestGetProcessIterator:
@@ -20,14 +20,17 @@ class TestGetProcessIterator:
             assert isinstance(labeler, PidLabeler)
         assert sorted(process.pid for process in processes) == [10, 30]
 
-    def test_process_iterator_cmdline_regexps(self, proc_dir, make_process_dir):
+    def test_process_iterator_cmdline_regexps(
+        self, proc_dir, make_process_dir
+    ):
         """An iterator yielding processes with matching cmdline is returned."""
         (make_process_dir(10) / "cmdline").write_text("foo\x00bar\x00")
         (make_process_dir(20) / "cmdline").write_text("another\x00command\x00")
         (make_process_dir(30) / "cmdline").write_text("baz\x00bza\x00")
         (make_process_dir(40) / "cmdline").write_text("something\x00else\x00")
         iterator = get_process_iterator(
-            proc=proc_dir, cmdline_regexps=[re.compile("foo"), re.compile("baz")]
+            proc=proc_dir,
+            cmdline_regexps=[re.compile("foo"), re.compile("baz")],
         )
         labelers, processes = zip(*iterator)
         for labeler in labelers:

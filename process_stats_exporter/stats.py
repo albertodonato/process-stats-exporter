@@ -1,13 +1,14 @@
 """Collect metrics for processes and tasks"""
 
 from collections import defaultdict
+from collections.abc import (
+    Mapping,
+    Sequence,
+)
 from typing import (
     Any,
     DefaultDict,
-    List,
-    Mapping,
     NamedTuple,
-    Sequence,
 )
 
 from lxstats.process import Process
@@ -37,7 +38,7 @@ class StatsCollector:
     def __init__(self, labels: Sequence[str] = ()):
         self.labels = list(labels)
 
-    def metrics(self) -> List[MetricConfig]:
+    def metrics(self) -> list[MetricConfig]:
         """Return a list of MetricConfigs."""
         raise NotImplementedError("Subclasses must implement metrics()")
 
@@ -51,13 +52,22 @@ class ProcessStatsCollector(StatsCollector):
 
     _STATS = (
         ProcessStat(
-            "proc_time_user", "counter", "Time scheduled in user mode", "stat.utime"
+            "proc_time_user",
+            "counter",
+            "Time scheduled in user mode",
+            "stat.utime",
         ),
         ProcessStat(
-            "proc_time_system", "counter", "Time scheduled in kernel mode", "stat.stime"
+            "proc_time_system",
+            "counter",
+            "Time scheduled in kernel mode",
+            "stat.stime",
         ),
         ProcessStat(
-            "proc_mem_rss", "gauge", "Memory resident segment size (RSS)", "stat.rss"
+            "proc_mem_rss",
+            "gauge",
+            "Memory resident segment size (RSS)",
+            "stat.rss",
         ),
         ProcessStat(
             "proc_mem_rss_max",
@@ -91,10 +101,13 @@ class ProcessStatsCollector(StatsCollector):
         ),
     )
 
-    def metrics(self) -> List[MetricConfig]:
+    def metrics(self) -> list[MetricConfig]:
         return [
             MetricConfig(
-                stat.metric, stat.description, stat.type, {"labels": self.labels}
+                stat.metric,
+                stat.description,
+                stat.type,
+                {"labels": self.labels},
             )
             for stat in self._STATS
         ]
@@ -108,7 +121,9 @@ class ProcessTasksStatsCollector(StatsCollector):
     """Collect metrics for a process' tasks."""
 
     _STATS = (
-        ProcessTasksStat("proc_tasks_count", "gauge", "Number of process tasks"),
+        ProcessTasksStat(
+            "proc_tasks_count", "gauge", "Number of process tasks"
+        ),
         ProcessTasksStat(
             "proc_tasks_state_running",
             "gauge",
@@ -126,10 +141,13 @@ class ProcessTasksStatsCollector(StatsCollector):
         ),
     )
 
-    def metrics(self) -> List[MetricConfig]:
+    def metrics(self) -> list[MetricConfig]:
         return [
             MetricConfig(
-                stat.metric, stat.description, stat.type, {"labels": self.labels}
+                stat.metric,
+                stat.description,
+                stat.type,
+                {"labels": self.labels},
             )
             for stat in self._STATS
         ]

@@ -101,6 +101,6 @@ Additional static labels can be passed with the ``-l`` flag to tag all metrics
 .. |Build Status| image:: https://github.com/albertodonato/process-stats-exporter/workflows/CI/badge.svg
    :alt: Build Status
    :target: https://github.com/albertodonato/process-stats-exporter/actions?query=workflow%3ACI
-.. |Coverage Status| image:: https://img.shields.io/codecov/c/github/albertodonato/process-stats-exporter/master.svg
+.. |Coverage Status| image:: https://img.shields.io/codecov/c/github/albertodonato/process-stats-exporter/main.svg
    :alt: Coverage Status
    :target: https://codecov.io/gh/albertodonato/process-stats-exporter

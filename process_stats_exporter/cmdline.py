@@ -6,10 +6,7 @@ from argparse import (
     Namespace,
 )
 import re
-from typing import (
-    Any,
-    Optional,
-)
+from typing import Any
 
 LABEL_RE = re.compile(r"[a-z][a-z0-9_]+$")
 
@@ -22,14 +19,16 @@ class LabelAction(Action):
         parser: ArgumentParser,
         namespace: Namespace,
         values: Any,
-        option_string: Optional[str] = None,
+        option_string: str | None = None,
     ):
         labels = {}
         for value in values:
             try:
                 label, value = value.split("=")
             except ValueError:
-                parser.error(f'labels must be in the form "name=value": {value}')
+                parser.error(
+                    f'labels must be in the form "name=value": {value}'
+                )
                 return
             if not LABEL_RE.match(label):
                 parser.error(f"invalid label: {label}")
@@ -47,7 +46,7 @@ class CmdlineRegexpAction(Action):
         parser: ArgumentParser,
         namespace: Namespace,
         values: Any,
-        option_string: Optional[str] = None,
+        option_string: str | None = None,
     ):
         regexps = []
         for value in values:
@@ -59,7 +58,9 @@ class CmdlineRegexpAction(Action):
 
             for groupname in regexp.groupindex:
                 if not LABEL_RE.match(groupname):
-                    parser.error(f"regexp group not valid as label: {groupname}")
+                    parser.error(
+                        f"regexp group not valid as label: {groupname}"
+                    )
                     return
 
             regexps.append(regexp)
